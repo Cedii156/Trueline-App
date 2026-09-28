@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Elektro-Werkzeugkasten</title>
+<title>Trueline</title>
 <meta name="theme-color" content="#1F2430">
 <meta name="description" content="Nachschlagen, Rechner und Aufmaß mit PDF für Elektriker">
 <link rel="manifest" href="manifest.json">
@@ -37,7 +37,7 @@
   --bg:#14161B; --card:#1E2128; --ink:#E8EAEE; --muted:#9BA2AE; --line:#2D313A; --field:#262A32;
   --soft:#262A32; --soft2:#262A32; --accent:#A77BEA; --shadow:none;
 }
-html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 64px)}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 12px);scroll-padding-bottom:80px}
 *,*::before,*::after{box-sizing:inherit}
 input,select,textarea,button,details,details *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:"Barlow",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:17px;line-height:1.5}
@@ -56,11 +56,49 @@ header{padding:18px 0 14px}
 .search input{flex:1;min-width:0;font:inherit;font-size:18px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--field);color:var(--ink)}
 .gbtn{display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;font:600 15px "Barlow",sans-serif;padding:0 14px;border-radius:10px;background:var(--ink);color:var(--card);text-decoration:none;border:0}
 
-/* Tabs */
-nav.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:8px 0}
-.tabrow{display:flex;gap:4px;background:var(--card);border-radius:12px;padding:4px;box-shadow:var(--shadow)}
-.tab{flex:1;min-width:0;font:700 17px "Barlow Condensed",sans-serif;padding:8px 4px;border-radius:9px;border:0;background:transparent;color:var(--muted);cursor:pointer}
-.tab[aria-selected="true"]{background:var(--ink);color:var(--card)}
+/* Untere Leiste */
+.bnav{position:fixed;left:0;right:0;bottom:0;z-index:8;background:var(--card);border-top:1px solid var(--line);padding:4px 4px calc(4px + env(safe-area-inset-bottom,0px))}
+.bnav-in{display:flex;max-width:760px;margin:0 auto}
+.bbtn{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;border:0;background:none;color:var(--muted);font:600 12px "Barlow",sans-serif;padding:5px 2px 4px;cursor:pointer}
+.bbtn .ic{display:flex;align-items:center;justify-content:center;width:50px;height:28px;border-radius:14px}
+.bbtn svg{width:22px;height:22px}
+.bbtn .lb{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bbtn[aria-current="page"],.bbtn.on{color:var(--ink)}
+.bbtn[aria-current="page"] .ic{background:var(--ink);color:var(--card)}
+.bbtn.on .ic{background:var(--soft)}
+
+/* Menü */
+.scrim{position:fixed;inset:0;background:rgba(10,12,16,.45);z-index:20}
+.drawer{position:fixed;top:0;bottom:0;left:0;width:min(300px,84vw);background:var(--card);z-index:21;overflow-y:auto;
+  padding:calc(env(safe-area-inset-top,0px) + 16px) 10px calc(env(safe-area-inset-bottom,0px) + 16px);
+  box-shadow:0 0 24px rgba(0,0,0,.2);visibility:hidden;transform:translateX(-105%);transition:transform .22s,visibility 0s .22s}
+.drawer.open{visibility:visible;transform:none;transition:transform .22s}
+.drawer::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--grad)}
+.dhead{display:flex;align-items:center;justify-content:space-between;padding:0 6px 6px 10px}
+.dhead h2{margin:0;font-size:30px}
+.dclose{border:0;background:none;color:var(--muted);width:44px;height:44px;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.dclose svg,.ditem svg{width:22px;height:22px}
+.dlabel{font:600 13px "Barlow",sans-serif;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin:14px 10px 4px}
+.ditem{display:flex;align-items:center;gap:14px;width:100%;border:0;background:none;color:var(--ink);font:600 17px "Barlow",sans-serif;padding:11px 10px;border-radius:10px;cursor:pointer;text-align:left}
+.ditem[aria-current="page"]{background:var(--soft)}
+.ditem .pin{margin-left:auto;font-size:12px;font-weight:500;color:var(--muted)}
+
+/* Einstellungen */
+.lrow{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}
+.lrow:last-child{border-bottom:0}
+.lrow .lic{display:flex;color:var(--muted)}.lrow .lic svg{width:22px;height:22px}
+.lrow .nm{flex:1;margin:0;font-size:17px;cursor:pointer}
+.tool .lrow input[type=checkbox]{width:24px;height:24px;padding:0;margin:0 4px 0 6px;accent-color:var(--ink);flex:none;cursor:pointer}
+.mini{width:40px;height:40px;padding:0;font-size:18px;flex:none}
+.mini:disabled{opacity:.35;cursor:default}
+
+/* Schaltpläne */
+.plan{display:block;width:100%;max-width:420px;margin:0 auto 12px;color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:10px}
+.plan g{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+.plan .dash{stroke-dasharray:4 4}
+.plan .duenn{stroke-width:1.2}
+.plan text{font:600 14px "Barlow",sans-serif;fill:currentColor;stroke:none}
+.plan text.klein{font-size:11px;font-weight:500;fill:var(--muted)}
 :focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 
 /* Kategorien */
@@ -163,7 +201,7 @@ select,.tool input,.tool textarea,.entry input,.entry textarea{width:100%;font:i
 .seg{display:inline-flex;background:var(--card);border-radius:10px;padding:3px;box-shadow:var(--shadow)}
 .seg button{border:0;background:transparent;color:var(--muted);font:600 15px "Barlow",sans-serif;padding:6px 12px;border-radius:8px;cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--card)}
-.amstatus{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 16px);background:var(--ink);color:var(--card);padding:8px 14px;border-radius:10px;font-size:15px;z-index:9;max-width:90vw}
+.amstatus{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 84px);background:var(--ink);color:var(--card);padding:8px 14px;border-radius:10px;font-size:15px;z-index:9;max-width:90vw}
 .amstatus:empty{display:none}
 .quick{display:grid;grid-auto-flow:column;grid-template-rows:repeat(2,auto);justify-content:start;gap:6px;overflow-x:auto;margin:0 -16px 12px;padding:0 16px 4px;scrollbar-width:thin}
 .quick .chip{font-size:14px;padding:5px 10px;white-space:nowrap}
@@ -184,7 +222,7 @@ select,.tool input,.tool textarea,.entry input,.entry textarea{width:100%;font:i
 .posrow .mg{font:700 19px "Barlow Condensed",sans-serif;white-space:nowrap}
 .amactions{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
 .btnrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
-footer{color:var(--muted);font-size:14px;padding:18px 0 30px}
+footer{color:var(--muted);font-size:14px;padding:18px 0 100px}
 [hidden]{display:none!important}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 </style>
@@ -193,7 +231,7 @@ footer{color:var(--muted);font-size:14px;padding:18px 0 30px}
 <div class="wrap">
 <header>
   <div class="plate">
-    <h1>Elektro-<span>Werkzeugkasten</span></h1>
+    <h1>Trueline</h1>
     <p>Nachschlagen, rechnen, aufmessen: Befestigung nach VDE, Leitungsberechnung und Aufmaß mit PDF.</p>
     <div class="search" role="search">
       <input id="q" type="search" placeholder="z. B. Lochziegel, Flur, Bad, Wallbox …" aria-label="Suchbegriff" autocomplete="off">
@@ -201,15 +239,6 @@ footer{color:var(--muted);font-size:14px;padding:18px 0 30px}
     </div>
   </div>
 </header>
-
-<nav class="tabs" aria-label="Bereiche">
-  <div class="tabrow" role="tablist">
-    <button class="tab" role="tab" aria-selected="true" data-tab="wissen">Wissen</button>
-    <button class="tab" role="tab" aria-selected="false" data-tab="tools">Rechner</button>
-    <button class="tab" role="tab" aria-selected="false" data-tab="aufmass">Aufmaß</button>
-    <button class="tab" role="tab" aria-selected="false" data-tab="quiz">Quiz</button>
-  </div>
-</nav>
 
 <main>
 <section id="wissen">
@@ -430,13 +459,37 @@ footer{color:var(--muted);font-size:14px;padding:18px 0 30px}
 <section id="quiz" hidden>
   <div class="quiz" id="quizBox"></div>
 </section>
+
+<section id="plaene" hidden>
+  <p class="sub" style="margin:12px 2px 0">Grundschaltungen als Stromlaufplan. Schaltung antippen zum Öffnen.</p>
+  <div id="plaeneListe"></div>
+  <p class="sub" style="margin:4px 2px 0">Vereinfachte Darstellung, Schaltzeichen angelehnt an DIN EN 60617. Schutzleiter (PE) ist nicht gezeichnet, muss aber immer mit angeschlossen werden. Vor dem Arbeiten die 5 Sicherheitsregeln einhalten (DIN VDE 0105-100).</p>
+</section>
+
+<section id="einst" hidden>
+  <div class="tool">
+    <h2>Einstellungen</h2>
+    <h3 style="margin-top:14px">Untere Leiste</h3>
+    <p class="sub">Wähle bis zu 4 Bereiche für den Schnellzugriff unten. Alles andere findest du im Menü (☰). Mit ↑ ↓ änderst du die Reihenfolge.</p>
+    <div id="leisteListe"></div>
+    <p class="hint" id="leisteHinweis"></p>
+    <div class="btnrow"><button class="btn" id="leisteReset">Standard wiederherstellen</button></div>
+  </div>
+</section>
 </main>
 
 <div id="amStatus" class="amstatus" aria-live="polite"></div>
 <footer>
-  Richtwerte für die Praxis. Verbindlich sind die aktuellen Normen (DIN VDE, DIN), die TAB des Netzbetreibers, die Leitungsanlagen-Richtlinie des jeweiligen Bundeslandes und die Herstellerangaben bzw. Zulassungen der Befestigungsmittel. Stand: September 2026 · App-Version 1.0
+  Richtwerte für die Praxis. Verbindlich sind die aktuellen Normen (DIN VDE, DIN), die TAB des Netzbetreibers, die Leitungsanlagen-Richtlinie des jeweiligen Bundeslandes und die Herstellerangaben bzw. Zulassungen der Befestigungsmittel. Stand: September 2026 · App-Version 1.1
 </footer>
 </div>
+
+<nav class="bnav" aria-label="Schnellzugriff"><div class="bnav-in" id="bnav"></div></nav>
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" aria-label="Menü" aria-hidden="true">
+  <div class="dhead"><h2>Trueline</h2><button class="dclose" id="dclose" aria-label="Menü schließen"></button></div>
+  <div id="drawerListe"></div>
+</aside>
 
 <script src="lib/jspdf.umd.min.js"></script>
 <script src="lib/jspdf.plugin.autotable.min.js"></script>
@@ -748,12 +801,179 @@ qIn.addEventListener("input", () => { if(document.getElementById("wissen").hidde
 qIn.addEventListener("keydown", ev => { if(ev.key==="Enter"){ qIn.blur(); }});
 renderChips(); render();
 
-/* ---------- Tabs ---------- */
-function showTab(t){
-  document.querySelectorAll(".tab").forEach(b => b.setAttribute("aria-selected", b.dataset.tab===t));
-  ["wissen","tools","aufmass","quiz"].forEach(id => document.getElementById(id).hidden = id!==t);
+/* ---------- Navigation: untere Leiste, Menü, Einstellungen ---------- */
+const ICONS = {
+  wissen:'<path d="M2 5h7a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H2z"/><path d="M22 5h-7a3 3 0 0 0-3 3v12a2 2 0 0 1 2-2h8z"/>',
+  tools:'<rect x="5" y="2" width="14" height="20" rx="2"/><path d="M8 6h8M8 11h1M11.5 11h1M15 11h1M8 14.5h1M11.5 14.5h1M15 14.5h1M8 18h1M11.5 18h1M15 18h1"/>',
+  plaene:'<path d="M2 16h4M18 16h4M6 16l10-7"/><circle cx="6" cy="16" r="1.6"/><circle cx="18" cy="16" r="1.6"/>',
+  aufmass:'<rect x="2" y="7" width="20" height="10" rx="1.5"/><path d="M6 7v4M10 7v3M14 7v4M18 7v3"/>',
+  quiz:'<circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/>',
+  einst:'<path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/>',
+  menu:'<path d="M4 6h16M4 12h16M4 18h16"/>',
+  zu:'<path d="M6 6l12 12M18 6L6 18"/>'
+};
+// Hauptbereiche – neue Bereiche hier eintragen, dann erscheinen sie automatisch im Menü und in den Einstellungen
+const FUNK = [
+  {id:"wissen", name:"Wissen"},
+  {id:"tools", name:"Rechner"},
+  {id:"plaene", name:"Schaltpläne"},
+  {id:"aufmass", name:"Aufmaß"},
+  {id:"quiz", name:"Quiz"}
+];
+const LEISTE_KEY = "trueline-leiste", LEISTE_STD = ["wissen","tools","plaene","aufmass"], LEISTE_MAX = 4;
+const funkName = id => id==="einst" ? "Einstellungen" : (FUNK.find(f => f.id===id)||{}).name || id;
+const icon = id => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[id]}</svg>`;
+function leisteLaden(){
+  try {
+    const a = JSON.parse(localStorage.getItem(LEISTE_KEY));
+    if(Array.isArray(a)){
+      const f = a.filter((id,i) => FUNK.some(x => x.id===id) && a.indexOf(id)===i).slice(0, LEISTE_MAX);
+      if(f.length) return f;
+    }
+  } catch(e){}
+  return LEISTE_STD.slice();
 }
-document.querySelectorAll(".tab").forEach(b => b.addEventListener("click", () => showTab(b.dataset.tab)));
+let leiste = leisteLaden(), aktiverTab = "wissen";
+function leisteSpeichern(){ try { localStorage.setItem(LEISTE_KEY, JSON.stringify(leiste)); } catch(e){} }
+
+function navRender(){
+  const imMenu = !leiste.includes(aktiverTab);
+  document.getElementById("bnav").innerHTML = leiste.map(id =>
+    `<button class="bbtn" data-tab="${id}"${id===aktiverTab?' aria-current="page"':''}><span class="ic">${icon(id)}</span><span class="lb">${funkName(id)}</span></button>`).join("")
+    + `<button class="bbtn${imMenu?" on":""}" id="menuBtn" aria-label="Menü öffnen" aria-expanded="${document.getElementById("drawer").classList.contains("open")}"><span class="ic">${icon("menu")}</span><span class="lb">Menü</span></button>`;
+  const item = id => `<button class="ditem" data-tab="${id}"${id===aktiverTab?' aria-current="page"':''}>${icon(id)}<span>${funkName(id)}</span>${leiste.includes(id)?'<span class="pin">unten</span>':''}</button>`;
+  document.getElementById("drawerListe").innerHTML =
+    `<div class="dlabel">Bereiche</div>${FUNK.map(f => item(f.id)).join("")}<div class="dlabel">App</div>${item("einst")}`;
+}
+
+function showTab(t){
+  const alle = FUNK.map(f => f.id).concat("einst");
+  if(!alle.includes(t)) t = "wissen";
+  const wechsel = t !== aktiverTab;
+  alle.forEach(id => document.getElementById(id).hidden = id!==t);
+  aktiverTab = t;
+  if(t==="einst") einstRender();
+  navRender();
+  if(wechsel) window.scrollTo({top:0});
+}
+
+const drawer = document.getElementById("drawer"), scrim = document.getElementById("scrim");
+function menuAuf(){
+  drawer.classList.add("open"); drawer.setAttribute("aria-hidden","false"); scrim.hidden = false;
+  navRender();
+  try { history.pushState({menu:1}, ""); } catch(e){}
+  const erst = drawer.querySelector('.ditem[aria-current="page"]') || drawer.querySelector(".ditem"); if(erst) erst.focus();
+}
+function menuZu(ausVerlauf){
+  if(!drawer.classList.contains("open")) return;
+  drawer.classList.remove("open"); drawer.setAttribute("aria-hidden","true"); scrim.hidden = true;
+  navRender();
+  if(!ausVerlauf && history.state && history.state.menu) history.back();
+}
+document.getElementById("dclose").innerHTML = icon("zu");
+document.getElementById("dclose").addEventListener("click", () => menuZu());
+scrim.addEventListener("click", () => menuZu());
+window.addEventListener("popstate", () => menuZu(true));   // Zurück-Taste am Handy schließt das Menü
+document.addEventListener("keydown", ev => { if(ev.key==="Escape") menuZu(); });
+document.getElementById("bnav").addEventListener("click", ev => {
+  if(ev.target.closest("#menuBtn")) return menuAuf();
+  const b = ev.target.closest("[data-tab]"); if(b) showTab(b.dataset.tab);
+});
+document.getElementById("drawerListe").addEventListener("click", ev => {
+  const b = ev.target.closest("[data-tab]"); if(!b) return;
+  showTab(b.dataset.tab); menuZu();
+});
+
+function einstRender(){
+  const row = (id, an, i) => `<div class="lrow"><span class="lic">${icon(id)}</span><label class="nm" for="le-${id}">${funkName(id)}</label>`
+    + (an ? `<button class="btn mini" data-mv="-1" data-id="${id}" aria-label="${funkName(id)} nach oben"${i===0?" disabled":""}>↑</button><button class="btn mini" data-mv="1" data-id="${id}" aria-label="${funkName(id)} nach unten"${i===leiste.length-1?" disabled":""}>↓</button>` : "")
+    + `<input type="checkbox" id="le-${id}" data-id="${id}"${an?" checked":""}${(an && leiste.length===1) || (!an && leiste.length>=LEISTE_MAX)?" disabled":""}></div>`;
+  document.getElementById("leisteListe").innerHTML =
+    leiste.map((id,i) => row(id, true, i)).join("") + FUNK.filter(f => !leiste.includes(f.id)).map(f => row(f.id, false)).join("");
+  document.getElementById("leisteHinweis").textContent = leiste.length >= LEISTE_MAX
+    ? `Leiste voll (${LEISTE_MAX} von ${LEISTE_MAX}). Erst einen Bereich abwählen, um einen anderen hinzuzufügen.`
+    : `${leiste.length} von ${LEISTE_MAX} Plätzen belegt.`;
+}
+function leisteGeaendert(){ leisteSpeichern(); einstRender(); navRender(); }
+document.getElementById("leisteListe").addEventListener("change", ev => {
+  const id = ev.target.dataset.id; if(!id) return;
+  if(ev.target.checked){ if(leiste.length < LEISTE_MAX && !leiste.includes(id)) leiste.push(id); }
+  else if(leiste.length > 1) leiste = leiste.filter(x => x!==id);
+  leisteGeaendert();
+});
+document.getElementById("leisteListe").addEventListener("click", ev => {
+  const b = ev.target.closest("[data-mv]"); if(!b) return;
+  const i = leiste.indexOf(b.dataset.id), j = i + (+b.dataset.mv);
+  if(i<0 || j<0 || j>=leiste.length) return;
+  [leiste[i], leiste[j]] = [leiste[j], leiste[i]];
+  leisteGeaendert();
+  const f = document.querySelector(`#leisteListe [data-mv="${b.dataset.mv}"][data-id="${b.dataset.id}"]`); if(f && !f.disabled) f.focus();
+});
+document.getElementById("leisteReset").addEventListener("click", () => { leiste = LEISTE_STD.slice(); leisteGeaendert(); });
+
+/* ---------- Schaltpläne ---------- */
+const SP = {
+  w:(x1,y1,x2,y2,k) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"${k?` class="${k}"`:""}/>`,
+  dot:(x,y) => `<circle cx="${x}" cy="${y}" r="3" fill="currentColor"/>`,
+  t:(x,y,s,k) => `<text x="${x}" y="${y}"${k?` class="${k}"`:""}>${s}</text>`,
+  // Schienen L1 oben, N unten
+  schienen:() => SP.w(36,30,300,30) + SP.t(8,35,"L1") + SP.w(36,280,300,280) + SP.t(12,285,"N"),
+  // Leuchte, y = oberer Anschluss (26 hoch)
+  lampe:(x,y,n) => `<circle cx="${x}" cy="${y+13}" r="13"/>` + SP.w(x-9.2,y+3.8,x+9.2,y+22.2) + SP.w(x+9.2,y+3.8,x-9.2,y+22.2) + SP.t(x+19,y+18,n),
+  // Schließer (offen), y = oberer Anschluss (36 hoch)
+  schliesser:(x,y,n) => SP.w(x,y,x-10,y) + SP.w(x,y+36,x-16,y+5) + SP.t(x+8,y+24,n),
+  // Taster = Schließer mit Betätigung
+  taster:(x,y,n) => SP.schliesser(x,y,n) + SP.w(x-8,y+20.5,x-26,y+20.5,"dash") + `<polyline points="${x-22},${y+14} ${x-26},${y+14} ${x-26},${y+27} ${x-22},${y+27}"/>`,
+  // Wechsler, gemeinsamer Anschluss oben, Kontakte unten bei x±16 (36 hoch), p = "l"/"r" Schaltstellung
+  wechslerOben:(x,y,n,p) => SP.w(x-16,y+36,x-16,y+32) + SP.w(x+16,y+36,x+16,y+32) + SP.w(x,y,x+(p==="l"?-16:16),y+32) + SP.t(x+24,y+18,n),
+  // Wechsler, Kontakte oben bei x±16, gemeinsamer Anschluss unten (36 hoch)
+  wechslerUnten:(x,y,n,p) => SP.w(x-16,y,x-16,y+4) + SP.w(x+16,y,x+16,y+4) + SP.w(x,y+36,x+(p==="l"?-16:16),y+4) + SP.t(x+24,y+24,n),
+  // Kreuzschalter, Eingänge oben, Ausgänge unten bei x±16 (44 hoch)
+  kreuz:(x,y,n) => `<rect x="${x-26}" y="${y+2}" width="52" height="40" rx="4" class="duenn"/>` + SP.w(x-16,y,x-16,y+44) + SP.w(x+16,y,x+16,y+44)
+    + SP.w(x-16,y+8,x+16,y+36,"dash") + SP.w(x+16,y+8,x-16,y+36,"dash") + SP.t(x+32,y+27,n),
+  // Spule (Stromstoßschalter), y = oben (18 hoch)
+  spule:(x,y,n) => `<rect x="${x-13}" y="${y}" width="26" height="18"/>` + SP.t(x+20,y+14,n) + SP.t(x-34,y+2,"A1","klein") + SP.t(x-34,y+30,"A2","klein"),
+  svg:(titel, inhalt) => `<svg class="plan" viewBox="0 0 320 300" role="img" aria-label="Stromlaufplan ${titel}"><g>${SP.schienen()}${inhalt}</g></svg>`
+};
+const PLAENE = [
+  {ico:"Aus", titel:"Ausschaltung", kurz:"Eine Leuchte von einer Stelle schalten",
+   svg: SP.dot(168,30)+SP.w(168,30,168,80)+SP.schliesser(168,80,"S1")+SP.w(168,116,168,190)+SP.lampe(168,190,"E1")+SP.w(168,216,168,280)+SP.dot(168,280),
+   text:`<p>Der Außenleiter L geht über den Ausschalter zur Leuchte. N und PE gehen direkt zur Leuchte.</p>
+   <ul><li><b>Schalter:</b> 2 Adern – L hin, geschalteter Leiter zurück</li><li><b>Leuchte:</b> geschalteter Leiter, N, PE</li></ul>
+   <div class="merke"><b>Merke:</b> Immer den Außenleiter schalten, nie den N.</div>`},
+  {ico:"Ser", titel:"Serienschaltung", kurz:"Zwei Leuchten von einer Stelle getrennt schalten",
+   svg: SP.dot(168,30)+SP.w(168,30,168,60)+SP.dot(168,60)+SP.w(108,60,228,60)+SP.w(108,60,108,90)+SP.w(228,60,228,90)
+     +`<rect x="82" y="76" width="182" height="58" rx="6" class="dash duenn"/>`+SP.t(58,110,"S1")
+     +SP.schliesser(108,90,"S1.1")+SP.schliesser(228,90,"S1.2")+SP.w(108,126,108,190)+SP.w(228,126,228,190)
+     +SP.lampe(108,190,"E1")+SP.lampe(228,190,"E2")+SP.w(108,216,108,280)+SP.w(228,216,228,280)+SP.dot(108,280)+SP.dot(228,280),
+   text:`<p>Ein Serienschalter hat zwei Wippen in einem Gerät. L kommt einmal an und wird auf zwei geschaltete Leiter verteilt.</p>
+   <ul><li><b>Schalter:</b> 3 Adern – L hin, 2 geschaltete Leiter zurück</li><li><b>Leuchten:</b> je geschalteter Leiter, N, PE</li></ul>
+   <div class="bsp"><b>Praxis:</b> Deckenleuchte und Spiegelleuchte im Bad, Licht und Lüfter.</div>`},
+  {ico:"Wec", titel:"Wechselschaltung", kurz:"Eine Leuchte von zwei Stellen schalten",
+   svg: SP.dot(168,30)+SP.w(168,30,168,60)+SP.wechslerOben(168,60,"S1","l")+SP.w(152,96,152,150)+SP.w(184,96,184,150)
+     +SP.t(192,127,"korrespondierende Leiter","klein")+SP.wechslerUnten(168,150,"S2","r")+SP.w(168,186,168,200)+SP.lampe(168,200,"E1")+SP.w(168,226,168,280)+SP.dot(168,280),
+   text:`<p>Zwei Wechselschalter sind über zwei korrespondierende Leiter verbunden. Jeder Schalter kann die Leuchte ein- oder ausschalten.</p>
+   <ul><li><b>Dose → Schalter 1:</b> 3 Adern – L und 2 korrespondierende Leiter</li><li><b>Dose → Schalter 2:</b> 3 Adern – 2 korrespondierende Leiter und Leuchtendraht</li></ul>
+   <div class="merke"><b>Merke:</b> Am gemeinsamen Anschluss (am Schalter gekennzeichnet) kommt bei Schalter 1 L an, bei Schalter 2 geht der Leuchtendraht ab. Die beiden anderen Klemmen sind die korrespondierenden Leiter.</div>
+   <div class="bsp"><b>Fehlersuche:</b> Leuchte geht nur in bestimmten Stellungen? Meist ist ein korrespondierender Leiter mit L oder dem Leuchtendraht vertauscht.</div>`},
+  {ico:"Kr", titel:"Kreuzschaltung", kurz:"Eine Leuchte von drei oder mehr Stellen schalten",
+   svg: SP.dot(168,30)+SP.w(168,30,168,50)+SP.wechslerOben(168,50,"S1","l")+SP.w(152,86,152,110)+SP.w(184,86,184,110)+SP.kreuz(168,110,"S2")
+     +SP.w(152,154,152,176)+SP.w(184,154,184,176)+SP.wechslerUnten(168,176,"S3","l")+SP.w(168,212,168,222)+SP.lampe(168,222,"E1")+SP.w(168,248,168,280)+SP.dot(168,280),
+   text:`<p>Außen sitzt je ein Wechselschalter, dazwischen beliebig viele Kreuzschalter. Der Kreuzschalter tauscht die beiden korrespondierenden Leiter (gestrichelt = umgeschaltete Stellung).</p>
+   <ul><li><b>Kreuzschalter:</b> 4 Adern – 2 korrespondierende Leiter rein, 2 raus</li><li><b>Wechselschalter:</b> wie bei der Wechselschaltung</li></ul>
+   <div class="merke"><b>Merke:</b> Am Kreuzschalter Eingangs- und Ausgangspaar nicht mischen – sonst schaltet eine Stelle nicht richtig. Ab etwa vier Stellen ist eine Stromstoßschaltung meist einfacher.</div>`},
+  {ico:"SS", titel:"Stromstoßschaltung", kurz:"Eine Leuchte mit Tastern von beliebig vielen Stellen",
+   svg: SP.dot(70,30)+SP.w(70,30,70,70)+SP.taster(70,70,"S1")+SP.dot(130,30)+SP.w(130,30,130,70)+SP.taster(130,70,"S2")
+     +SP.w(70,106,70,130)+SP.w(130,106,130,130)+SP.w(70,130,130,130)+SP.dot(100,130)+SP.w(100,130,100,170)+SP.spule(100,170,"K1")+SP.w(100,188,100,280)+SP.dot(100,280)
+     +SP.dot(240,30)+SP.w(240,30,240,90)+SP.schliesser(240,90,"K1")+SP.w(240,126,240,190)+SP.lampe(240,190,"E1")+SP.w(240,216,240,280)+SP.dot(240,280)
+     +SP.t(40,298,"Steuerstromkreis","klein")+SP.t(200,298,"Hauptstromkreis","klein"),
+   text:`<p>Jeder Tastendruck gibt einen Stromstoß auf die Spule des Stromstoßschalters K1. Sein Kontakt schaltet dann abwechselnd ein und aus.</p>
+   <ul><li><b>Taster:</b> 2 Adern – L und Tasterleitung zur Spule (A1)</li><li>Alle Taster werden parallel angeschlossen, beliebig viele.</li><li><b>Stromstoßschalter:</b> in der Verteilung oder in einer Dose, Kontakt schaltet die Leuchte</li></ul>
+   <div class="merke"><b>Merke:</b> Spulenspannung auf dem Gerät prüfen (230 V oder Kleinspannung). Beleuchtete Taster nur, wenn der Stromstoßschalter dafür geeignet ist – Herstellerangabe beachten.</div>`}
+];
+document.getElementById("plaeneListe").innerHTML = PLAENE.map(p =>
+  `<details class="tool acc"><summary><span class="ico">${p.ico}</span><span class="tt"><b>${p.titel}</b><span>${p.kurz}</span></span><span class="pm" aria-hidden="true">+</span></summary>
+   <div class="inner">${SP.svg(p.titel, p.svg)}${p.text}<p class="sub" style="margin:8px 0 0">Aderzahl ohne PE, bei Verlegung über Abzweigdose.</p></div></details>`).join("");
 
 /* ---------- Dübel-Finder ---------- */
 const DF = {
@@ -1379,7 +1599,7 @@ $("amBackup").addEventListener("click", async () => {
   const daten = { app:"elektro-werkzeugkasten", version:1, erstellt:new Date().toISOString(), projekte:AM.projekte, firma:AM.firma };
   const d = new Date(), stamp = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
   const blob = new Blob([JSON.stringify(daten, null, 1)], {type:"application/json"});
-  const st = await teilenOderSpeichern(blob, "Elektro-Sicherung_" + stamp + ".json", "application/json");
+  const st = await teilenOderSpeichern(blob, "Trueline-Sicherung_" + stamp + ".json", "application/json");
   if(st !== "abbruch"){ try { localStorage.setItem("aufmass-letzte-sicherung", String(Date.now())); } catch(e){} sicherungsHinweis();
     meldung(st === "gespeichert" ? "Sicherung im Download-Ordner gespeichert." : "Sicherung geteilt.", 3500); }
 });
@@ -1422,6 +1642,7 @@ $("afPlus").addEventListener("click", () => schritt(1));
 let startModus = "einfach"; try { startModus = localStorage.getItem("aufmass-modus") || "einfach"; } catch(e){}
 setModus(startModus);
 amStart();
+showTab(leiste[0]);
 try { if(navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch(e){}
 if("serviceWorker" in navigator){ window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {})); }
 

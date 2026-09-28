@@ -1,4 +1,4 @@
-const CACHE = "elektro-werkzeugkasten-v1";
+const CACHE = "trueline-v3";
 const DATEIEN = [
  "./",
  "index.html",

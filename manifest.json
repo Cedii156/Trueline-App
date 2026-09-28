@@ -1,7 +1,7 @@
 {
   "id": "./",
-  "name": "Elektro-Werkzeugkasten",
-  "short_name": "Elektro",
+  "name": "Trueline",
+  "short_name": "Trueline",
   "description": "Nachschlagen nach VDE, Rechner und Aufmaß mit PDF – offline auf der Baustelle.",
   "lang": "de",
   "start_url": "./",
