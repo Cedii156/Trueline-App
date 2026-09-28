@@ -1,4 +1,4 @@
-const CACHE = "trueline-v5";
+const CACHE = "trueline-v6";
 const DATEIEN = [
  "./",
  "index.html",

@@ -308,7 +308,7 @@ footer{color:var(--muted);font-size:14px;padding:18px 0 100px}
     </div>
     <div class="result" id="lOut"></div>
     <div class="tw"><table id="lTab"></table></div>
-    <p class="sub" style="margin:0">Vereinfachte Rechnung ohne Blindwiderstand (bis etwa 16 mm² gut genau). Belastbarkeit: PVC-isolierte Cu-Leitung nach DIN VDE 0298-4 mit Faktoren für Temperatur und Häufung. Abschaltbedingung (Schleifenimpedanz) und Selektivität separat prüfen.</p>
+    <p class="sub" style="margin:0">Vereinfachte Rechnung ohne Blindwiderstand (bis etwa 16 mm² gut genau). Belastbarkeit: PVC-isolierte Cu-Leitung nach DIN VDE 0298-4 mit Faktoren für Temperatur und Häufung (Richtwerte bis 240 mm², Querschnitte über 50 mm² erscheinen nur, wenn kleinere nicht reichen). Abschaltbedingung (Schleifenimpedanz) und Selektivität separat prüfen.</p>
     </div>
   </details>
 
@@ -518,7 +518,7 @@ footer{color:var(--muted);font-size:14px;padding:18px 0 100px}
 
 <div id="amStatus" class="amstatus" aria-live="polite"></div>
 <footer>
-  Richtwerte für die Praxis. Verbindlich sind die aktuellen Normen (DIN VDE, DIN), die TAB des Netzbetreibers, die Leitungsanlagen-Richtlinie des jeweiligen Bundeslandes und die Herstellerangaben bzw. Zulassungen der Befestigungsmittel. Stand: September 2026 · App-Version 1.3
+  Richtwerte für die Praxis. Verbindlich sind die aktuellen Normen (DIN VDE, DIN), die TAB des Netzbetreibers, die Leitungsanlagen-Richtlinie des jeweiligen Bundeslandes und die Herstellerangaben bzw. Zulassungen der Befestigungsmittel. Stand: September 2026 · App-Version 1.4
 </footer>
 </div>
 
@@ -1162,17 +1162,23 @@ function showQ(){
 startQuiz();
 
 /* ---------- Leitungsberechnung ---------- */
-const QS = [1.5,2.5,4,6,10,16,25,35,50];
-const LS = [6,10,13,16,20,25,32,40,50,63,80,100,125];
+const QS = [1.5,2.5,4,6,10,16,25,35,50,70,95,120,150,185,240];
+const QS_KLEIN = 9;   // bis 50 mm² immer anzeigen, größere nur wenn nötig
+// Bemessungsströme Schutzorgan: bis 125 A LS-Schalter, darüber NH-Sicherung o. Ä.
+const LS = [6,10,13,16,20,25,32,40,50,63,80,100,125,160,200,250,315,400];
 // Belastbarkeit Cu, PVC 70 °C, 30 °C Umgebung: [2 belastete Adern, 3 belastete Adern]
+// Richtwerte nach DIN VDE 0298-4 Tab. 3 bzw. IEC 60364-5-52 Tab. B.52.2/B.52.4 (E: B.52.10)
 const IZ = {
-  A1:[[15.5,13.5],[19.5,18],[26,24],[34,31],[46,42],[61,56],[80,73],[99,89],[119,108]],
-  A2:[[15.5,13],[18.5,17.5],[25,23],[32,29],[43,39],[57,52],[75,68],[92,83],[110,99]],
-  B1:[[17.5,15.5],[24,21],[32,28],[41,36],[57,50],[76,68],[101,89],[125,110],[151,134]],
-  B2:[[16.5,15],[23,20],[30,27],[38,34],[52,46],[69,62],[90,80],[111,99],[133,118]],
-  C:[[19.5,17.5],[27,24],[36,32],[46,41],[63,57],[85,76],[112,96],[138,119],[168,144]],
-  E:[[22,18.5],[30,25],[40,34],[51,43],[70,60],[94,80],[119,101],[148,126],[180,153]]
+  A1:[[15.5,13.5],[19.5,18],[26,24],[34,31],[46,42],[61,56],[80,73],[99,89],[119,108],[151,136],[182,164],[210,188],[240,216],[273,245],[320,286]],
+  A2:[[15.5,13],[18.5,17.5],[25,23],[32,29],[43,39],[57,52],[75,68],[92,83],[110,99],[139,125],[167,150],[192,172],[219,196],[248,223],[291,261]],
+  B1:[[17.5,15.5],[24,21],[32,28],[41,36],[57,50],[76,68],[101,89],[125,110],[151,134],[192,171],[232,207],[269,239],[300,262],[341,296],[400,346]],
+  B2:[[16.5,15],[23,20],[30,27],[38,34],[52,46],[69,62],[90,80],[111,99],[133,118],[168,149],[201,179],[232,206],[258,225],[294,255],[344,297]],
+  C:[[19.5,17.5],[27,24],[36,32],[46,41],[63,57],[85,76],[112,96],[138,119],[168,144],[213,184],[258,223],[299,259],[344,299],[392,341],[461,403]],
+  E:[[22,18.5],[30,25],[40,34],[51,43],[70,60],[94,80],[119,101],[148,126],[180,153],[232,196],[282,238],[328,276],[379,319],[434,364],[514,430]]
 };
+const schutzName = In => In > 125 ? "Sicherung" : "LS";
+// Überlastschutz (DIN VDE 0100-430): I2 ≤ 1,45·Iz. LS: I2 = 1,45·In → In ≤ Iz. NH gG: I2 = 1,6·In → In ≤ 0,906·Iz
+const schutzPasst = (In, iz) => In <= iz * (In > 125 ? 1.45/1.6 : 1);
 const num = v => parseFloat(String(v).replace(",", "."));
 const f2 = (n,d=2) => Number(n).toLocaleString("de-DE",{minimumFractionDigits:0,maximumFractionDigits:d});
 const lIds = ["lNetz","lArt","lWert","lL","lCos","lMax","lKappa","lVa","lHf","lT"];
@@ -1190,20 +1196,24 @@ function leitung(){
   const inMin = LS.find(x => x >= I);
   const rows = QS.map((A,i) => {
     const du = fak/A, dp = du/U*100, iz = IZ[g("lVa")][i][adern]*faktor;
-    const okDu = dp <= maxP, okIz = inMin && inMin <= iz;
+    const okDu = dp <= maxP, okIz = inMin && schutzPasst(inMin, iz);
     return {A,du,dp,iz,okDu,okIz};
   });
   const rec = rows.find(r => r.okDu && r.okIz);
   const aDu = fak/(maxP/100*U);
+  const gross = !rec || rec.A > QS[QS_KLEIN-1];   // Lösung erst über 50 mm² (oder gar keine)
   let html = `<div class="kv"><div>Betriebsstrom<b>${f2(I,1)} A</b></div><div>Min. Querschnitt wegen ΔU<b>${f2(aDu)} mm²</b></div>`;
   if(rec){
-    const lsMax = LS.filter(x => x>=I && x<=rec.iz).pop();
-    html += `<div>Empfehlung<b>${f2(rec.A)} mm² · LS ${inMin} A</b></div></div>
-      <p style="margin:8px 0 0">Spannungsfall bei ${f2(rec.A)} mm²: ${f2(rec.du)} V = ${f2(rec.dp)} %. Belastbarkeit Iz ${f2(rec.iz,1)} A – höchstens LS ${lsMax} A zulässig.</p>`;
-  } else html += `</div><p style="margin:8px 0 0" class="st-bad">Bis 50 mm² keine Lösung – Länge, Last oder Verlegeart prüfen.</p>`;
+    const lsMax = LS.filter(x => x>=I && schutzPasst(x, rec.iz)).pop();
+    html += `<div>Empfehlung<b>${f2(rec.A)} mm² · ${schutzName(inMin)} ${inMin} A</b></div></div>
+      <p style="margin:8px 0 0">Spannungsfall bei ${f2(rec.A)} mm²: ${f2(rec.du)} V = ${f2(rec.dp)} %. Belastbarkeit Iz ${f2(rec.iz,1)} A – höchstens ${schutzName(lsMax)} ${lsMax} A zulässig.</p>`;
+    if(gross) html += `<p style="margin:8px 0 0" class="st-warn">Über 50 mm²: Spannungsfall hier ohne Blindwiderstand gerechnet, er fällt in Wirklichkeit etwas höher aus – mit Herstellerwerten nachrechnen. Bei großen Querschnitten oft Kabel (NYY, NAYY) und Verlegung nach Herstellerangabe prüfen.</p>`;
+  } else html += `</div><p style="margin:8px 0 0" class="st-bad">Bis ${f2(QS[QS.length-1])} mm² keine Lösung – Länge, Last oder Verlegeart prüfen, ggf. parallele Leitungen planen.</p>`;
   out.innerHTML = html;
+  // Querschnitte über 50 mm² nur zeigen, wenn bis 50 mm² nichts passt – bis zur Empfehlung
+  const bis = !gross ? QS_KLEIN : rec ? rows.indexOf(rec)+1 : rows.length;
   tab.innerHTML = `<thead><tr><th>mm²</th><th>ΔU</th><th>ΔU %</th><th>Iz</th><th>passt?</th></tr></thead><tbody>` +
-    rows.map(r => `<tr class="${r===rec?"rec":""}"><td>${f2(r.A)}</td><td>${f2(r.du)} V</td><td class="${r.okDu?"st-ok":"st-bad"}">${f2(r.dp)} %</td><td class="${r.okIz?"":"st-bad"}">${f2(r.iz,1)} A</td><td>${r.okDu&&r.okIz?"ja":!r.okIz?"Iz zu klein":"ΔU zu hoch"}</td></tr>`).join("") + `</tbody>`;
+    rows.slice(0, bis).map(r => `<tr class="${r===rec?"rec":""}"><td>${f2(r.A)}</td><td>${f2(r.du)} V</td><td class="${r.okDu?"st-ok":"st-bad"}">${f2(r.dp)} %</td><td class="${r.okIz?"":"st-bad"}">${f2(r.iz,1)} A</td><td>${r.okDu&&r.okIz?"ja":!r.okIz?"Iz zu klein":"ΔU zu hoch"}</td></tr>`).join("") + `</tbody>`;
 }
 lIds.forEach(id => { const el = document.getElementById(id); el.addEventListener("input", leitung); el.addEventListener("change", leitung); });
 leitung(); abst();
