@@ -1,0 +1,1430 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Elektro-Werkzeugkasten</title>
+<meta name="theme-color" content="#1F2430">
+<meta name="description" content="Nachschlagen, Rechner und Aufmaß mit PDF für Elektriker">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icons/favicon-64.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<style>
+@font-face{font-family:"Barlow";font-weight:400;font-display:swap;src:url(fonts/barlow-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Barlow";font-weight:500;font-display:swap;src:url(fonts/barlow-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Barlow";font-weight:600;font-display:swap;src:url(fonts/barlow-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"Barlow Condensed";font-weight:600;font-display:swap;src:url(fonts/barlow-condensed-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"Barlow Condensed";font-weight:700;font-display:swap;src:url(fonts/barlow-condensed-latin-700-normal.woff2) format("woff2")}
+:root{
+  --bg:#F3F4F6; --card:#FFFFFF; --ink:#1F2430; --muted:#6B7280; --line:#E3E5EA; --field:#F7F8FA;
+  --g1:#B5179E; --g2:#1A9FD8; --accent:#6D3FC0;
+  --grad:linear-gradient(135deg,var(--g1),var(--g2));
+  --soft:#F1F2F5; --soft2:#F1F2F5;
+  --ok:#1E8E5A; --bad:#C62845; --warn:#B26A00;
+  --shadow:0 1px 2px rgba(20,24,33,.06),0 1px 8px rgba(20,24,33,.04);
+  --r:12px;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#14161B; --card:#1E2128; --ink:#E8EAEE; --muted:#9BA2AE; --line:#2D313A; --field:#262A32;
+    --soft:#262A32; --soft2:#262A32; --accent:#A77BEA; --shadow:none;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#14161B; --card:#1E2128; --ink:#E8EAEE; --muted:#9BA2AE; --line:#2D313A; --field:#262A32;
+  --soft:#262A32; --soft2:#262A32; --accent:#A77BEA; --shadow:none;
+}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 64px)}
+*,*::before,*::after{box-sizing:inherit}
+input,select,textarea,button,details,details *{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Barlow",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:17px;line-height:1.5}
+h1,h2,h3,.cond{font-family:"Barlow Condensed","Arial Narrow",system-ui,sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:0 16px}
+button{-webkit-tap-highlight-color:transparent}
+
+/* Kopf */
+header{padding:18px 0 14px}
+.plate{background:var(--card);border-radius:var(--r);padding:20px 18px 18px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.plate::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--grad)}
+.plate h1{margin:4px 0 2px;font-size:clamp(30px,8vw,42px);line-height:1;letter-spacing:.2px}
+.plate h1 span{color:inherit}
+.plate p{margin:6px 0 14px;font-size:16px;color:var(--muted)}
+.search{display:flex;gap:8px}
+.search input{flex:1;min-width:0;font:inherit;font-size:18px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--field);color:var(--ink)}
+.gbtn{display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;font:600 15px "Barlow",sans-serif;padding:0 14px;border-radius:10px;background:var(--ink);color:var(--card);text-decoration:none;border:0}
+
+/* Tabs */
+nav.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:8px 0}
+.tabrow{display:flex;gap:4px;background:var(--card);border-radius:12px;padding:4px;box-shadow:var(--shadow)}
+.tab{flex:1;min-width:0;font:700 17px "Barlow Condensed",sans-serif;padding:8px 4px;border-radius:9px;border:0;background:transparent;color:var(--muted);cursor:pointer}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--card)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* Kategorien */
+.chips{display:flex;gap:6px;overflow-x:auto;padding:10px 0 4px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;font:500 15px "Barlow",sans-serif;padding:6px 12px 6px 10px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;display:flex;align-items:center;gap:7px}
+.chip .dot{display:none}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--card);border-color:var(--ink)}
+.count{color:var(--muted);font-size:15px;margin:8px 0 10px}
+
+/* Einträge */
+.entry{background:var(--card);border-radius:var(--r);margin:0 0 10px;box-shadow:var(--shadow);overflow:hidden;position:relative}
+.entry::before{content:none}
+summary{list-style:none;cursor:pointer;padding:14px 16px;display:flex;gap:10px;align-items:flex-start}
+summary::-webkit-details-marker{display:none}
+summary .q{flex:1;font:700 21px/1.2 "Barlow Condensed",sans-serif}
+summary .pm{font:600 22px/1 "Barlow",sans-serif;color:var(--muted);transition:transform .2s}
+details[open] > summary .pm{transform:rotate(45deg)}
+.body{padding:0 16px 16px}
+.body p{margin:0 0 10px}
+.body ul{margin:0 0 10px;padding-left:20px}
+.body li{margin-bottom:4px}
+.merke{background:var(--soft);border-radius:8px;padding:10px 12px;margin:10px 0}
+.merke b,.bsp b{font-family:"Barlow Condensed",sans-serif;font-size:18px}
+.bsp{background:var(--soft2);border-radius:8px;padding:10px 12px;margin:10px 0}
+.norm{font-size:14px;color:var(--muted);margin-top:8px}
+.tw{overflow-x:auto;margin:6px 0 10px}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:"Barlow Condensed",sans-serif;font-size:17px}
+tr.hit td,tr.rec td{background:var(--soft);font-weight:600}
+.empty{background:var(--card);border-radius:var(--r);padding:18px;text-align:center;box-shadow:var(--shadow)}
+.empty p{margin:0 0 12px}
+
+/* Rechner-Karten */
+.tool{background:var(--card);border-radius:var(--r);padding:16px;margin:12px 0;box-shadow:var(--shadow)}
+.acc{padding:0}
+.acc > summary{padding:16px;align-items:center}
+.acc .ico{width:42px;height:42px;border-radius:10px;background:var(--field);border:1px solid var(--line);color:var(--ink);display:flex;align-items:center;justify-content:center;font:700 20px "Barlow Condensed",sans-serif;flex:none}
+.acc .tt{flex:1;min-width:0}
+.acc .tt b{display:block;font:700 22px/1.15 "Barlow Condensed",sans-serif}
+.acc .tt span{display:block;color:var(--muted);font-size:14px;line-height:1.35}
+.acc .inner{padding:0 16px 16px;border-top:1px solid var(--line);padding-top:14px}
+.tool h2{margin:0 0 4px;font-size:26px;line-height:1.1}
+.tool h3{margin:0 0 10px;font:700 21px "Barlow Condensed",sans-serif}
+.sub{margin:0 0 12px;color:var(--muted);font-size:15px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.flds{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.flds .full{grid-column:1/-1}
+@media (max-width:420px){.flds{grid-template-columns:1fr}}
+label{display:block;font-weight:600;font-size:15px;margin-bottom:4px}
+select,.tool input,.tool textarea,.entry input,.entry textarea{width:100%;font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--field);color:var(--ink)}
+.tool textarea,.entry textarea{min-height:80px;resize:vertical}
+.result{margin-top:12px;padding:12px 14px;background:var(--soft);border-radius:10px;position:relative;overflow:hidden}
+.result::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--ink)}
+.result .big{font:700 26px/1.1 "Barlow Condensed",sans-serif}
+.kv{display:flex;flex-wrap:wrap;gap:6px 18px;margin:0}
+.kv div{font-size:15px}.kv b{font:700 20px "Barlow Condensed",sans-serif;display:block}
+.st-ok{color:var(--ok);font-weight:600}.st-warn{color:var(--warn);font-weight:600}.st-bad{color:var(--bad);font-weight:600}
+#lTab th,#lTab td{white-space:nowrap}
+.sublist{margin:12px 0 0;border:1px solid var(--line);border-radius:10px}
+.sublist > summary{padding:10px 12px;align-items:center}
+.sublist .q2{flex:1;font-weight:600;font-size:15px}
+.kgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;padding:0 12px 12px}
+.kgrid label{font-size:13px;font-weight:600;margin-bottom:2px}
+.kgrid input{padding:8px 10px}
+.mat{margin:8px 0 0;padding-left:18px}.mat li{margin:2px 0}
+.minichips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 0}
+.minichips .chip{font-size:14px;padding:4px 10px}
+
+/* Buttons */
+.pbtn{font:700 18px "Barlow Condensed",sans-serif;padding:11px 18px;border-radius:10px;border:0;background:var(--ink);color:var(--card);cursor:pointer}
+.btn{font:600 16px "Barlow",sans-serif;padding:10px 14px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+.btn.danger{color:var(--bad)}
+.hint{color:var(--muted);font-size:14px;margin:10px 0}
+
+/* Quiz */
+.quiz{background:var(--card);border-radius:var(--r);padding:18px;margin:12px 0;box-shadow:var(--shadow)}
+.qmeta{display:flex;justify-content:space-between;color:var(--muted);font-size:15px;margin-bottom:6px}
+.bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-bottom:14px}
+.bar i{display:block;height:100%;background:var(--ink);transition:width .3s}
+.quiz h2{font-size:25px;line-height:1.15;margin:0 0 14px}
+.opt{display:block;width:100%;text-align:left;font:inherit;padding:12px 14px;margin:0 0 8px;border-radius:10px;border:1px solid var(--line);background:var(--field);color:var(--ink);cursor:pointer}
+.opt.right{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,var(--card))}
+.opt.wrong{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,var(--card))}
+.opt:disabled{cursor:default}
+.explain{margin:8px 0 12px;padding:10px 12px;border-radius:8px;background:var(--soft2)}
+
+/* Aufmaß */
+.amhead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:14px 0 10px}
+.amhead h2{margin:0;font-size:28px}
+.amcard{display:block;width:100%;text-align:left;background:var(--card);color:var(--ink);border:0;border-radius:var(--r);padding:12px 14px;margin:0 0 10px;cursor:pointer;font:inherit;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.amcard::before{content:none}
+.amcard.fertig b::after{content:" ✓";color:var(--ok)}
+.amcard b{font:700 21px/1.2 "Barlow Condensed",sans-serif;display:block}
+.amcard span{color:var(--muted);font-size:15px}
+.back{background:none;border:0;color:var(--ink);font:600 16px "Barlow",sans-serif;padding:12px 0 4px;cursor:pointer}
+.amtop{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.amtitel{font-size:30px;line-height:1.1;margin:4px 0 10px}
+.seg{display:inline-flex;background:var(--card);border-radius:10px;padding:3px;box-shadow:var(--shadow)}
+.seg button{border:0;background:transparent;color:var(--muted);font:600 15px "Barlow",sans-serif;padding:6px 12px;border-radius:8px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--card)}
+.amstatus{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 16px);background:var(--ink);color:var(--card);padding:8px 14px;border-radius:10px;font-size:15px;z-index:9;max-width:90vw}
+.amstatus:empty{display:none}
+.quick{display:grid;grid-auto-flow:column;grid-template-rows:repeat(2,auto);justify-content:start;gap:6px;overflow-x:auto;margin:0 -16px 12px;padding:0 16px 4px;scrollbar-width:thin}
+.quick .chip{font-size:14px;padding:5px 10px;white-space:nowrap}
+.stepper{display:flex;gap:6px}
+.stepper button{flex:none;width:46px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:600 22px "Barlow",sans-serif;cursor:pointer}
+.stepper input{text-align:center}
+.erg{font:700 20px "Barlow Condensed",sans-serif;margin:6px 0 10px;min-height:26px}
+.erg.err{color:var(--bad);font:500 15px "Barlow",sans-serif}
+.einfach .nur-erw{display:none!important}
+.erweitert .nur-einf{display:none!important}
+.grp{margin:16px 0 8px}
+.grp h3{margin:0 0 6px;font:700 22px "Barlow Condensed",sans-serif}
+.posrow{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;background:var(--card);color:var(--ink);border:0;border-radius:10px;padding:10px 12px;margin:0 0 6px;cursor:pointer;font:inherit;box-shadow:var(--shadow)}
+.posrow.edit{outline:2px solid var(--accent)}
+.posrow .nr{color:var(--muted);font-size:14px;min-width:34px;padding-top:2px}
+.posrow .bz{flex:1;min-width:0}
+.posrow .bz small{display:block;color:var(--muted);font-size:14px;overflow-wrap:anywhere}
+.posrow .mg{font:700 19px "Barlow Condensed",sans-serif;white-space:nowrap}
+.amactions{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+footer{color:var(--muted);font-size:14px;padding:18px 0 30px}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="plate">
+    <h1>Elektro-<span>Werkzeugkasten</span></h1>
+    <p>Nachschlagen, rechnen, aufmessen: Befestigung nach VDE, Leitungsberechnung und Aufmaß mit PDF.</p>
+    <div class="search" role="search">
+      <input id="q" type="search" placeholder="z. B. Lochziegel, Flur, Bad, Wallbox …" aria-label="Suchbegriff" autocomplete="off">
+      <a id="google" class="gbtn" href="https://www.google.com/search?q=VDE+Befestigung" target="_blank" rel="noopener">Google</a>
+    </div>
+  </div>
+</header>
+
+<nav class="tabs" aria-label="Bereiche">
+  <div class="tabrow" role="tablist">
+    <button class="tab" role="tab" aria-selected="true" data-tab="wissen">Wissen</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="tools">Rechner</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="aufmass">Aufmaß</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="quiz">Quiz</button>
+  </div>
+</nav>
+
+<main>
+<section id="wissen">
+  <div class="chips" id="chips"></div>
+  <div class="count" id="count" aria-live="polite"></div>
+  <div id="list"></div>
+</section>
+
+<section id="tools" hidden>
+  <p class="sub" style="margin:12px 2px 0">Rechner antippen zum Öffnen.</p>
+
+  <details class="tool acc" id="accLeitung">
+    <summary><span class="ico">ΔU</span><span class="tt"><b>Leitungsberechnung</b><span>Spannungsfall, Querschnitt und LS-Schalter</span></span><span class="pm" aria-hidden="true">+</span></summary>
+    <div class="inner">
+    <div class="flds">
+      <div><label for="lNetz">Netz</label><select id="lNetz"><option value="1">1~ Wechselstrom 230 V</option><option value="3">3~ Drehstrom 400 V</option></select></div>
+      <div><label for="lArt">Angabe als</label><select id="lArt"><option value="P">Leistung in kW</option><option value="I">Strom in A</option></select></div>
+      <div><label for="lWert" id="lWertLbl">Leistung (kW)</label><input id="lWert" type="text" inputmode="decimal" value="3,5"></div>
+      <div><label for="lL">Leitungslänge einfach (m)</label><input id="lL" type="text" inputmode="decimal" value="25"></div>
+      <div><label for="lCos">cos φ</label><input id="lCos" type="text" inputmode="decimal" value="1"></div>
+      <div><label for="lMax">max. Spannungsfall (%)</label><input id="lMax" type="text" inputmode="decimal" value="3"></div>
+      <div><label for="lKappa">Leitfähigkeit Cu</label><select id="lKappa"><option value="56">56 m/(Ω·mm²) – 20 °C</option><option value="47">47 m/(Ω·mm²) – 70 °C Betrieb</option></select></div>
+      <div><label for="lVa">Verlegeart</label><select id="lVa">
+        <option value="A1">A1 – Einzeladern im Rohr in gedämmter Wand</option>
+        <option value="A2">A2 – Mantelleitung im Rohr in gedämmter Wand</option>
+        <option value="B1">B1 – Einzeladern im Rohr/Kanal auf Wand</option>
+        <option value="B2">B2 – Mantelleitung im Rohr/Kanal auf Wand</option>
+        <option value="C" selected>C – direkt auf/in Wand (z. B. NYM unter Putz)</option>
+        <option value="E">E – frei in Luft, Kabelwanne</option></select></div>
+      <div><label for="lHf">Gebündelte Stromkreise</label><select id="lHf">
+        <option value="1">1 (keine Häufung)</option><option value="0.8">2</option><option value="0.7">3</option><option value="0.65">4</option><option value="0.6">5</option><option value="0.57">6</option><option value="0.54">7</option><option value="0.52">8</option><option value="0.5">9</option><option value="0.45">12</option><option value="0.41">16</option><option value="0.38">20</option></select></div>
+      <div><label for="lT">Umgebungstemperatur</label><select id="lT">
+        <option value="1.06">25 °C</option><option value="1" selected>30 °C</option><option value="0.94">35 °C</option><option value="0.87">40 °C</option><option value="0.79">45 °C</option><option value="0.71">50 °C</option></select></div>
+    </div>
+    <div class="result" id="lOut"></div>
+    <div class="tw"><table id="lTab"></table></div>
+    <p class="sub" style="margin:0">Vereinfachte Rechnung ohne Blindwiderstand (bis etwa 16 mm² gut genau). Belastbarkeit: PVC-isolierte Cu-Leitung nach DIN VDE 0298-4 mit Faktoren für Temperatur und Häufung. Abschaltbedingung (Schleifenimpedanz) und Selektivität separat prüfen.</p>
+    </div>
+  </details>
+
+  <details class="tool acc" id="accAbst">
+    <summary><span class="ico">↔</span><span class="tt"><b>Befestigungsabstände</b><span>Leitungstyp eingeben, z. B. 3x2,5 oder NYY 5x16</span></span><span class="pm" aria-hidden="true">+</span></summary>
+    <div class="inner">
+    <label for="ld">Leitungstyp oder Außen-Ø in mm</label>
+    <input id="ld" type="text" value="NYM 5x2,5" placeholder="z. B. 3x2,5 · NYY 5x16 · 11" autocomplete="off">
+    <div style="margin-top:10px"><label for="ldL">Strecke (m, optional – für die Anzahl Schellen)</label><input id="ldL" type="text" inputmode="decimal" placeholder="z. B. 12"></div>
+    <div class="minichips" id="ldChips"></div>
+    <div class="result" id="ldOut"></div>
+    <div class="tw"><table id="abst">
+      <thead><tr><th>Außen-Ø</th><th>waagerecht</th><th>senkrecht</th><th>Beispiel</th></tr></thead>
+      <tbody>
+        <tr data-max="9"><td>bis 9 mm</td><td>25 cm</td><td>40 cm</td><td>NYM-J 3×1,5</td></tr>
+        <tr data-max="15"><td>9–15 mm</td><td>30 cm</td><td>40 cm</td><td>NYM-J 5×2,5</td></tr>
+        <tr data-max="20"><td>15–20 mm</td><td>35 cm</td><td>45 cm</td><td>NYM-J 5×10</td></tr>
+        <tr data-max="40"><td>20–40 mm</td><td>40 cm</td><td>55 cm</td><td>NYY-J 5×16</td></tr>
+      </tbody>
+    </table></div>
+    <p class="sub" style="margin:0">Richtwerte, Herstellerangaben gehen vor. Außendurchmesser sind typische Werte – je nach Hersteller etwas anders. Dazu immer eine Schelle kurz vor und nach Bögen sowie an Dosen- und Geräteeinführungen.</p>
+    </div>
+  </details>
+  <details class="tool acc" id="accRinne">
+    <summary><span class="ico">⊓</span><span class="tt"><b>Kabelrinne: Ausleger &amp; Abhänger</b><span>Stützen, Verbinder, Dübel und Last pro Ausleger</span></span><span class="pm" aria-hidden="true">+</span></summary>
+    <div class="inner">
+    <div class="flds">
+      <div><label for="krL">Trassenlänge (m)</label><input id="krL" type="text" inputmode="decimal" value="20"></div>
+      <div><label for="krA">Stützweite</label><select id="krA"><option value="1">1,0 m</option><option value="1.2">1,2 m</option><option value="1.5" selected>1,5 m</option><option value="2">2,0 m</option></select></div>
+      <div><label for="krArt">Befestigung</label><select id="krArt">
+        <option value="wand">Wandausleger</option><option value="stiel">Hängestiel mit Ausleger</option><option value="trapez">Trapez (2 Gewindestangen)</option></select></div>
+      <div><label for="krTeil">Rinnenlänge je Stück</label><select id="krTeil"><option value="2">2 m</option><option value="3" selected>3 m</option><option value="6">6 m</option></select></div>
+      <div><label for="krF">Bögen / Abzweige</label><input id="krF" type="text" inputmode="numeric" value="0"></div>
+      <div><label for="krG">Rinne Eigengewicht (kg/m)</label><input id="krG" type="text" inputmode="decimal" value="2,5"></div>
+    </div>
+    <details class="sublist" id="krKabel">
+      <summary><span class="q2">Kabel auf der Rinne (für die Last)</span><span class="pm" aria-hidden="true">+</span></summary>
+      <div class="kgrid" id="krKabelGrid"></div>
+    </details>
+    <div class="result" id="krOut"></div>
+    <p class="sub" style="margin:0">Stützweite und zulässige Last immer mit dem Belastungsdiagramm des Rinnen- und Auslegerherstellers abgleichen. Stöße möglichst nahe an eine Stütze legen, an jedem Bogen und Abzweig eine zusätzliche Stütze. Kabelgewichte sind Circa-Werte.</p>
+    </div>
+  </details>
+
+  <details class="tool acc" id="accRohr">
+    <summary><span class="ico">◎</span><span class="tt"><b>Rohrschellen</b><span>Schellenabstand und Anzahl für Installationsrohr</span></span><span class="pm" aria-hidden="true">+</span></summary>
+    <div class="inner">
+    <div class="flds">
+      <div><label for="rsD">Rohrgröße</label><select id="rsD"><option>M16</option><option selected>M20</option><option>M25</option><option>M32</option><option>M40</option><option>M50</option></select></div>
+      <div><label for="rsDir">Verlegung</label><select id="rsDir"><option value="w">waagerecht</option><option value="s">senkrecht</option></select></div>
+      <div><label for="rsA">Schellenabstand (m)</label><input id="rsA" type="text" inputmode="decimal"></div>
+      <div><label for="rsL">Rohrlänge (m)</label><input id="rsL" type="text" inputmode="decimal" value="10"></div>
+      <div><label for="rsB">Bögen</label><input id="rsB" type="text" inputmode="numeric" value="0"></div>
+      <div><label for="rsDo">Dosen / Abzweige</label><input id="rsDo" type="text" inputmode="numeric" value="0"></div>
+    </div>
+    <div class="result" id="rsOut"></div>
+    <p class="sub" style="margin:0">Schellenabstand ist ein Richtwert für Kunststoff-Installationsrohr und wird bei Rohrgröße bzw. Richtung neu vorgeschlagen – du kannst ihn überschreiben. Herstellerangaben gehen vor, bei Wärme (Dachboden, Halle im Sommer) enger setzen. Je Bogen und je Dose wird vorne und hinten eine Schelle gezählt.</p>
+    </div>
+  </details>
+
+
+  <details class="tool acc">
+    <summary><span class="ico">⚙</span><span class="tt"><b>Dübel-Finder</b><span>Welcher Dübel für welchen Untergrund</span></span><span class="pm" aria-hidden="true">+</span></summary>
+    <div class="inner">
+    <div class="grid">
+      <div><label for="ug">Untergrund</label>
+        <select id="ug">
+          <option value="beton">Beton</option>
+          <option value="voll">Kalksandstein / Vollziegel</option>
+          <option value="loch">Lochziegel / Hohlblock</option>
+          <option value="poren">Porenbeton (Ytong)</option>
+          <option value="gk">Gipskarton / Trockenbau</option>
+          <option value="holz">Holz / OSB</option>
+          <option value="wdvs">WDVS / Dämmfassade</option>
+        </select></div>
+      <div><label for="last">Was kommt dran?</label>
+        <select id="last">
+          <option value="l">Leicht: Schelle, Kanal, Dose</option>
+          <option value="m">Mittel: Leuchte, Kleinverteiler, Bewegungsmelder</option>
+          <option value="s">Schwer: Verteiler, Wallbox, Kabelrinne</option>
+        </select></div>
+    </div>
+    <div class="result" id="duebelOut"></div>
+    </div>
+  </details>
+
+  <details class="tool acc">
+    <summary><span class="ico">↧</span><span class="tt"><b>Schraubenlänge &amp; Bohrtiefe</b><span>Schraube = Putz + Dübel + Anbauteil + Ø</span></span><span class="pm" aria-hidden="true">+</span></summary>
+    <div class="inner">
+    <div class="grid">
+      <div><label for="dl">Dübellänge (mm)</label><input id="dl" type="number" inputmode="decimal" value="40" min="0"></div>
+      <div><label for="at">Anbauteil (mm)</label><input id="at" type="number" inputmode="decimal" value="3" min="0"></div>
+      <div><label for="pu">Putz / Fliese (mm)</label><input id="pu" type="number" inputmode="decimal" value="10" min="0"></div>
+      <div><label for="sd">Schrauben-Ø (mm)</label><input id="sd" type="number" inputmode="decimal" value="5" min="0" step="0.5"></div>
+    </div>
+    <div class="result" id="schraubeOut"></div>
+    </div>
+  </details>
+</section>
+
+<section id="aufmass" class="einfach" hidden>
+  <div id="amListView">
+    <div class="amhead"><h2 class="cond">Aufmaß-Projekte</h2><button class="pbtn" id="amNew">Neues Projekt</button></div>
+    <div id="amListe"><p class="hint">Projekte werden geladen …</p></div>
+    <div class="btnrow">
+      <button class="btn" id="amFirmaBtn">Firmendaten für das PDF</button>
+      <button class="btn" id="amBackup">Sicherung erstellen</button>
+      <button class="btn" id="amRestore">Sicherung laden</button>
+      <input type="file" id="amRestoreFile" accept=".json,application/json" hidden>
+    </div>
+    <p class="hint" id="amBackupInfo"></p>
+    <p class="hint" id="amMode"></p>
+  </div>
+
+  <div id="amProjView" hidden>
+    <div class="amtop">
+      <button class="back" id="amBack">‹ Alle Projekte</button>
+      <div class="seg" role="group" aria-label="Ansicht"><button data-mode="einfach" aria-pressed="true">Einfach</button><button data-mode="erweitert" aria-pressed="false">Erweitert</button></div>
+    </div>
+    <h2 class="amtitel cond" id="amTitel"></h2>
+    <details class="entry" id="amKopf">
+      <summary><span class="q">Projektdaten</span><span class="pm" aria-hidden="true">+</span></summary>
+      <div class="body"><div class="flds">
+        <div class="full"><label for="pf-name">Bauvorhaben / Projekt</label><input id="pf-name" data-f="name" type="text"></div>
+        <div><label for="pf-kunde">Kunde</label><input id="pf-kunde" data-f="kunde" type="text"></div>
+        <div><label for="pf-datum">Datum</label><input id="pf-datum" data-f="datum" type="date"></div>
+        <div class="nur-erw"><label for="pf-auftragsnr">Auftrags-Nr.</label><input id="pf-auftragsnr" data-f="auftragsnr" type="text"></div>
+        <div class="nur-erw"><label for="pf-bearbeiter">Aufgemessen von</label><input id="pf-bearbeiter" data-f="bearbeiter" type="text"></div>
+        <div class="full nur-erw"><label for="pf-adresse">Adresse Baustelle</label><input id="pf-adresse" data-f="adresse" type="text"></div>
+        <div class="full nur-erw"><label for="pf-notiz">Bemerkungen (kommen ins PDF)</label><textarea id="pf-notiz" data-f="notiz"></textarea></div>
+      </div></div>
+    </details>
+
+    <div class="tool" id="amForm">
+      <h3 id="amFormTitel">Position erfassen</h3>
+      <div class="quick" id="amQuick"></div>
+      <div class="flds">
+        <div class="full nur-erw"><label for="af-bereich">Raum / Bereich</label><input id="af-bereich" type="text" list="amBereiche" placeholder="z. B. EG Küche"><datalist id="amBereiche"></datalist></div>
+        <div class="full"><label for="af-bez">Bezeichnung</label><input id="af-bez" type="text" list="amBezListe" placeholder="antippen oder eintippen"><datalist id="amBezListe"></datalist></div>
+        <div><label for="af-ansatz" id="af-ansatz-lbl">Menge</label>
+          <div class="stepper"><button type="button" class="nur-einf" id="afMinus" aria-label="weniger">−</button><input id="af-ansatz" type="text" inputmode="decimal" placeholder="0"><button type="button" class="nur-einf" id="afPlus" aria-label="mehr">+</button></div></div>
+        <div><label for="af-einheit">Einheit</label><select id="af-einheit"><option>Stk</option><option>m</option><option>m²</option><option>m³</option><option>psch</option><option>h</option></select></div>
+        <div class="full nur-erw"><div class="erg" id="af-erg" aria-live="polite"></div></div>
+        <div class="full nur-erw"><label for="af-bem">Bemerkung (optional)</label><input id="af-bem" type="text"></div>
+      </div>
+      <div class="btnrow" style="margin-top:12px">
+        <button class="pbtn" id="afSave">Hinzufügen</button>
+        <button class="btn" id="afCancel" hidden>Abbrechen</button>
+        <button class="btn danger" id="afDel" hidden>Löschen</button>
+      </div>
+    </div>
+
+    <div id="amPos"></div>
+    <div class="tool nur-erw" id="amSumme" hidden></div>
+    <div class="amactions">
+      <button class="pbtn" id="amPdf">PDF teilen</button>
+      <button class="btn" id="amPdfSave">PDF speichern</button>
+      <button class="btn" id="amFertig">Als fertig markieren</button>
+      <button class="btn danger" id="amDel">Projekt löschen</button>
+    </div>
+  </div>
+
+  <div id="amFirmaView" hidden>
+    <button class="back" id="amFirmaBack">‹ Zurück</button>
+    <div class="tool">
+      <h2>Firmendaten</h2>
+      <p class="sub">Stehen oben auf jedem Aufmaß-PDF.</p>
+      <div class="flds">
+        <div class="full"><label for="ff-name">Firmenname</label><input id="ff-name" data-f="name" type="text"></div>
+        <div class="full"><label for="ff-strasse">Straße, Nr.</label><input id="ff-strasse" data-f="strasse" type="text"></div>
+        <div><label for="ff-plz">PLZ</label><input id="ff-plz" data-f="plz" type="text" inputmode="numeric"></div>
+        <div><label for="ff-ort">Ort</label><input id="ff-ort" data-f="ort" type="text"></div>
+        <div><label for="ff-tel">Telefon</label><input id="ff-tel" data-f="tel" type="tel"></div>
+        <div><label for="ff-mail">E-Mail</label><input id="ff-mail" data-f="mail" type="email"></div>
+      </div>
+      <div class="btnrow" style="margin-top:12px"><button class="pbtn" id="ffSave">Firmendaten speichern</button></div>
+    </div>
+  </div>
+</section>
+
+<section id="quiz" hidden>
+  <div class="quiz" id="quizBox"></div>
+</section>
+</main>
+
+<div id="amStatus" class="amstatus" aria-live="polite"></div>
+<footer>
+  Richtwerte für die Praxis. Verbindlich sind die aktuellen Normen (DIN VDE, DIN), die TAB des Netzbetreibers, die Leitungsanlagen-Richtlinie des jeweiligen Bundeslandes und die Herstellerangaben bzw. Zulassungen der Befestigungsmittel. Stand: September 2026 · App-Version 1.0
+</footer>
+</div>
+
+<script src="lib/jspdf.umd.min.js"></script>
+<script src="lib/jspdf.plugin.autotable.min.js"></script>
+<script>
+const CATS = {
+  zonen:{name:"Installationszonen", c:"#B5179E"},
+  duebel:{name:"Dübel & Untergrund", c:"#A2229F"},
+  schellen:{name:"Schellen & Leitungen", c:"#8C2FA9"},
+  brand:{name:"Brandschutz", c:"#743DB4"},
+  hohlwand:{name:"Trockenbau", c:"#5B4DBE"},
+  trasse:{name:"Rinnen & Kanäle", c:"#4262C7"},
+  aussen:{name:"Außen & Erde", c:"#2D7DD0"},
+  geraete:{name:"Geräte, Leuchten, Bad", c:"#1A9FD8"}
+};
+
+const E = [
+/* ---------- ZONEN ---------- */
+{cat:"zonen", q:"Wo dürfen Leitungen unter Putz in der Wand liegen?",
+ tags:"installationszone din 18015-3 unterputz wand schlitz zone decke fußboden tür fenster",
+ a:`<p>In Wohngebäuden nur in den Installationszonen nach DIN 18015-3 – in anderen Gebäuden ist das genauso sinnvoll.</p>
+<div class="tw"><table><tr><th>Zone</th><th>Bereich</th><th>Vorzugsmaß</th></tr>
+<tr><td>oben waagerecht</td><td>15–45 cm unter Rohdecke</td><td>30 cm</td></tr>
+<tr><td>unten waagerecht</td><td>15–45 cm über Fertigfußboden</td><td>30 cm</td></tr>
+<tr><td>Mitte waagerecht</td><td>100–130 cm über FFB (nur Wände mit Arbeitsflächen, z. B. Küche)</td><td>115 cm</td></tr>
+<tr><td>senkrecht</td><td>10–30 cm neben Türen, Fenstern, Wandecken</td><td>15 cm</td></tr></table></div>`,
+ merke:"Leitungen immer senkrecht oder waagerecht, nie schräg. Dann weiß jeder, der später bohrt, wo nichts liegt.",
+ bsp:"Schalter neben der Tür: Leitung läuft in der oberen Zone waagerecht, dann 15 cm neben der Türkante senkrecht runter zum Schalter.",
+ norm:"DIN 18015-3, DIN VDE 0100-520"},
+{cat:"zonen", q:"Wie hoch kommen Schalter und Steckdosen?",
+ tags:"höhe schalter steckdose montagehöhe meterriss barrierefrei 105 30 115 85",
+ a:`<ul><li><b>Schalter</b> neben Türen: 105 cm über Fertigfußboden (Mitte)</li>
+<li><b>Steckdosen</b> normal: 30 cm (untere Zone)</li>
+<li><b>Über Arbeitsflächen</b> (Küche): 115 cm</li>
+<li><b>Barrierefrei</b>: Bedienelemente auf 85 cm (DIN 18040)</li></ul>`,
+ merke:"Höhen immer auf Fertigfußboden beziehen. Im Rohbau vom Meterriss aus messen, nicht vom Estrich oder Rohboden.",
+ bsp:"Meterriss liegt bei +1,00 m FFB. Schalter-Mitte also 5 cm über dem Meterriss, Steckdose 70 cm darunter.",
+ norm:"DIN 18015-3, DIN 18040-2"},
+{cat:"zonen", q:"Wie verlege ich Leitungen auf der Rohdecke oder im Fußbodenaufbau?",
+ tags:"rohdecke estrich fußboden decke leerrohr dokumentation foto",
+ a:`<p>Möglichst gebündelt, gerade und parallel zu den Wänden führen, am besten im Leerrohr. Alles gut fixieren, damit beim Estrich nichts aufschwimmt oder verrutscht.</p>`,
+ merke:"Vor dem Estrich alles mit Zollstock im Bild fotografieren – das ist später die beste Dokumentation.",
+ bsp:"Leerrohre auf der Decke mit Rohrschellen und Schlagdübeln fixieren und die Lage im Installationsplan eintragen.",
+ norm:"DIN 18015-3, DIN VDE 0100-520"},
+{cat:"zonen", q:"Wie tief darf ich in tragenden Wänden schlitzen?",
+ tags:"schlitz schlitzen stemmen fräsen tragende wand statik mauerwerk din en 1996",
+ a:`<p>Schlitze in tragenden Wänden sind nach Mauerwerksnorm DIN EN 1996 begrenzt – erlaubte Tiefe und Breite hängen von der Wanddicke ab. Nachträglich nur fräsen, nicht stemmen. Waagerechte und schräge Schlitze sind besonders kritisch.</p>`,
+ merke:"Nie in Stürze, Deckenauflager oder Stahlbetonstützen schlitzen. Im Zweifel Bauleitung oder Statiker fragen.",
+ bsp:"Senkrechter Schlitz für eine Steckdose in 24er Kalksandstein: mit der Mauernutfräse, sauber und nicht tiefer als nötig.",
+ norm:"DIN EN 1996-1-1 mit NA"},
+
+/* ---------- DÜBEL ---------- */
+{cat:"duebel", q:"Welcher Dübel für welchen Untergrund?",
+ tags:"dübel untergrund beton ziegel lochziegel kalksandstein porenbeton ytong gipskarton holz spreizdübel universaldübel injektion betonschraube",
+ a:`<div class="tw"><table><tr><th>Untergrund</th><th>Dübel</th><th>Bohren</th></tr>
+<tr><td>Beton</td><td>Spreizdübel, Betonschraube, schwer: Bolzenanker</td><td>mit Schlag</td></tr>
+<tr><td>Kalksandstein, Vollziegel</td><td>Spreiz- oder Universaldübel</td><td>mit Schlag</td></tr>
+<tr><td>Lochziegel, Hohlblock</td><td>langer Universaldübel, schwer: Injektionsmörtel mit Siebhülse</td><td><b>ohne</b> Schlag</td></tr>
+<tr><td>Porenbeton</td><td>Porenbetondübel (Spiral/Keil)</td><td><b>ohne</b> Schlag</td></tr>
+<tr><td>Gipskarton</td><td>Hohlraumdübel aus Metall, Kippdübel</td><td>ohne Schlag</td></tr>
+<tr><td>Holz</td><td>kein Dübel – direkt Holzschraube</td><td>vorbohren bei Hartholz</td></tr></table></div>`,
+ merke:"Lochziegel mit Schlag bohren zerstört die Stege – dann hält gar nichts mehr.",
+ bsp:"Unterverteilung auf Lochziegel: Injektionsmörtel mit Siebhülse und Ankerstange, oder lange Universaldübel mit mind. 4 Befestigungspunkten.",
+ norm:"Herstellerangaben, Zulassung (ETA / abZ) des Dübels"},
+{cat:"duebel", q:"Wie tief bohren, wie lang muss die Schraube sein?",
+ tags:"schraubenlänge bohrtiefe bohrloch dübellänge schraube durchmesser 6er 8er 10er",
+ a:`<ul><li><b>Bohrtiefe</b> ≈ Dübellänge + ca. 10 mm (plus Putzdicke)</li>
+<li><b>Schraubenlänge</b> = Putz + Dübellänge + Anbauteil + 1× Schraubendurchmesser</li>
+<li><b>Schrauben-Ø</b> passend: 6er Dübel 4–5 mm, 8er 4,5–6 mm, 10er 6–8 mm</li></ul>`,
+ merke:"Die Schraubenspitze muss hinten aus dem Dübel raus, sonst spreizt er nicht voll.",
+ bsp:"8×40er Dübel, 10 mm Putz, 3 mm Rückwand, 5er Schraube: 10 + 40 + 3 + 5 = 58 mm → 5×60. Rechner gibt’s im Tab „Rechner“.",
+ norm:"Herstellerangaben"},
+{cat:"duebel", q:"Warum hält der Dübel nicht?",
+ tags:"dübel hält nicht dreht durch locker ausreißen putz fuge bohrmehl",
+ a:`<ul><li>Bohrloch zu groß (Schlag im Lochstein, ausgeleiert)</li>
+<li>Bohrmehl nicht rausgeblasen</li><li>Schraube zu kurz oder zu dünn</li>
+<li>Dübel sitzt im Putz statt im Stein</li><li>In die Mörtelfuge gebohrt</li><li>Zu nah an der Kante</li></ul>`,
+ merke:"Putz trägt nicht. Dübel muss komplett im tragenden Stein sitzen.",
+ bsp:"Dübel dreht durch im Lochziegel: Loch mit Injektionsmörtel und Siebhülse retten statt dickeren Dübel reinzuwürgen.",
+ norm:"Herstellerangaben"},
+{cat:"duebel", q:"Was geht schneller als bohren und dübeln?",
+ tags:"setzgerät gasnagler bolzensetzgerät nageldübel schlagdübel direktbefestigung deckenclip schnell",
+ a:`<ul><li><b>Setzgerät</b> (Gas/Akku) mit Kabelclips oder Deckenabhängern – auf Beton und Stahl in Sekunden</li>
+<li><b>Nageldübel / Schlagdübel</b> für Schellen und Kanäle: bohren, reinstecken, einschlagen</li>
+<li><b>Nagelschellen</b> auf Holz und Mauerwerk</li>
+<li><b>Sammelhalter</b> statt vieler Einzelschellen</li></ul>`,
+ merke:"Setzgeräte nur nach Unterweisung, mit Schutzbrille und Gehörschutz. Nicht in Lochstein oder Porenbeton.",
+ bsp:"Leerrohre an Betondecke in der Tiefgarage: Setzgerät mit Rohrclips – spart pro Befestigung das Bohren komplett.",
+ norm:"Bedienungsanleitung, DGUV-Unterweisung"},
+{cat:"duebel", q:"Wie weit weg von Kanten darf ich bohren?",
+ tags:"randabstand achsabstand kante abplatzen",
+ a:`<p>Zu nah an Kanten platzt der Stein ab und der Dübel hat keinen Halt. Genaue Rand- und Achsabstände stehen im Datenblatt bzw. der Zulassung des Dübels.</p>`,
+ merke:"Lieber eine Befestigung mehr mit gutem Abstand als eine an der Kante.",
+ bsp:"Kabelkanal an der Fensterlaibung: Befestigung ein Stück weiter in die Wand setzen, nicht direkt an die Putzkante.",
+ norm:"Dübel-Zulassung / Datenblatt"},
+
+/* ---------- SCHELLEN ---------- */
+{cat:"schellen", q:"Wie viele Schellen pro Meter?",
+ tags:"befestigungsabstand schellenabstand schelle abstand aufputz nym meter",
+ a:`<div class="tw"><table><tr><th>Außen-Ø</th><th>waagerecht</th><th>senkrecht</th></tr>
+<tr><td>bis 9 mm</td><td>25 cm</td><td>40 cm</td></tr><tr><td>9–15 mm</td><td>30 cm</td><td>40 cm</td></tr>
+<tr><td>15–20 mm</td><td>35 cm</td><td>45 cm</td></tr><tr><td>20–40 mm</td><td>40 cm</td><td>55 cm</td></tr></table></div>
+<p>Richtwerte – Herstellerangaben gehen vor. Zusätzlich je eine Schelle kurz vor und nach Bögen und an Einführungen.</p>`,
+ merke:"Leitung darf nicht durchhängen und keine Zugkraft auf Klemmen bringen.",
+ bsp:"NYM-J 5×2,5 (ca. 11 mm) waagerecht in der Garage: alle 30 cm eine Schelle, dazu eine direkt vor der Abzweigdose.",
+ norm:"DIN VDE 0100-520 (Richtwerte), Herstellerangaben"},
+{cat:"schellen", q:"Welche Schelle für welchen Einsatz?",
+ tags:"schelle nagelschelle bügelschelle metallschelle sammelhalter abstandsschelle schlagschelle",
+ a:`<ul><li><b>Kunststoff-Schlagschelle / Nagelschelle</b>: Aufputz-Standard, schnell</li>
+<li><b>Metall-Bügelschelle</b>: NYY, Industrie, Fluchtwege</li>
+<li><b>Sammelhalter</b>: mehrere Leitungen auf einmal</li>
+<li><b>Abstandsschelle</b>: Feuchträume, Ställe – Leitung liegt nicht direkt an der nassen Wand</li>
+<li><b>Kabelbinder</b>: bündeln und auf Rinnen fixieren</li></ul>`,
+ merke:"Schelle passend zum Durchmesser – zu stramm quetscht den Mantel, zu locker rutscht.",
+ bsp:"Landwirtschaft/Stall: Abstandsschellen und korrosionsfeste Befestigung, damit sich kein Dreck und keine Nässe hinter der Leitung sammelt.",
+ norm:"DIN VDE 0100-520, 0100-705"},
+{cat:"schellen", q:"Darf ich Leitungen mit Kabelbindern befestigen?",
+ tags:"kabelbinder uv schwarz edelstahl klebesockel",
+ a:`<p>Auf Kabelrinnen und -leitern zum Fixieren: ja. Außen nur UV-beständige (meist schwarze) oder Edelstahl-Binder. Nicht so fest ziehen, dass der Mantel einschneidet.</p>`,
+ merke:"Klebesockel sind keine dauerhafte Befestigung – Wärme löst den Kleber. In Fluchtwegen reichen Kunststoffbinder als alleinige Befestigung nicht.",
+ bsp:"PV-Leitungen am Dach: Edelstahl-Kabelbinder mit Ummantelung statt Kunststoff – der hält auch nach Jahren Sonne noch.",
+ norm:"Herstellerangaben, MLAR"},
+{cat:"schellen", q:"Wie eng darf ich eine Leitung biegen?",
+ tags:"biegeradius biegen knick nym nyy",
+ a:`<ul><li><b>NYM</b> fest verlegt: mind. ca. 4× Außendurchmesser</li>
+<li><b>NYY</b> mehradrig: ca. 12× Außendurchmesser, einadrig ca. 15×</li></ul><p>Richtwerte – genaue Werte im Datenblatt.</p>`,
+ merke:"Zu enge Bögen quetschen die Isolierung – der Fehler kommt oft erst Jahre später.",
+ bsp:"NYM-J 5×2,5 mit ca. 11 mm: Biegeradius mind. ca. 45 mm.",
+ norm:"DIN VDE 0298-3, Datenblatt"},
+{cat:"schellen", q:"Was gilt bei Stegleitung (NYIF)?",
+ tags:"stegleitung nyif putz altbau",
+ a:`<p>Nur in trockenen Räumen und nur im oder unter Putz, vollständig eingebettet. Nicht gebündelt verlegen, nicht auf brennbaren Baustoffen. Mit Gipsbatzen oder speziellen Stegleitungsnägeln fixieren, ohne die Adern zu beschädigen.</p>`,
+ merke:"Heute kaum noch üblich – NYM ist fast immer die bessere Wahl.",
+ bsp:"Altbau-Sanierung: Stegleitung im Bestand gefunden? Nicht einfach verlängern oder auf Holz weiterführen.",
+ norm:"DIN VDE 0100-520"},
+
+/* ---------- BRANDSCHUTZ ---------- */
+{cat:"brand", q:"Was gilt für Leitungen in Fluchtwegen (Flur, Treppenhaus)?",
+ tags:"fluchtweg rettungsweg flur treppenraum mlar lar brandschutz metall dübel sammelhalter",
+ a:`<p>In notwendigen Fluren und Treppenräumen müssen offen verlegte Leitungen mit <b>nichtbrennbaren Befestigungsmitteln</b> (Stahlschellen, Metalldübel, Sammelhalter aus Stahl) so befestigt sein, dass sie im Brand nicht vorzeitig herunterfallen. Alternativ: klassifizierte Unterdecke oder Brandschutzkanal.</p>`,
+ merke:"Im Fluchtweg: Metall. Kunststoffdübel, -schellen oder Kabelbinder allein reichen nicht.",
+ bsp:"Büroflur, NYM-Bündel unter Betondecke: Stahl-Sammelhalter mit Betonschraube oder Brandschutz-Deckennagel.",
+ norm:"MLAR bzw. LAR des Bundeslandes"},
+{cat:"brand", q:"Was ist Funktionserhalt E30 / E90?",
+ tags:"funktionserhalt e30 e90 din 4102-12 sicherheitsbeleuchtung bma brandmelde system",
+ a:`<p>Leitungen für Sicherheitsanlagen (Sicherheitsbeleuchtung, Brandmeldeanlage, Entrauchung, Feuerwehraufzug) müssen im Brand eine bestimmte Zeit funktionieren. Kabel, Schellen, Dübel und Abstände sind nach DIN 4102-12 <b>als komplettes System</b> geprüft.</p>`,
+ merke:"Keine Mischsysteme! Nur die Teile und Abstände aus dem Prüfzeugnis verwenden – nicht schätzen.",
+ bsp:"Sicherheitsbeleuchtung im Treppenhaus: E30-Kabel mit den zugehörigen Stahlschellen und Brandschutzdübeln des gleichen Systemherstellers.",
+ norm:"DIN 4102-12, MLAR, Prüfzeugnis des Systems"},
+{cat:"brand", q:"Leitung durch Brandwand oder Decke – was muss ich tun?",
+ tags:"brandwand decke durchführung abschottung schott manschette brandschutzkitt kennzeichnung",
+ a:`<p>Jede Durchführung durch eine Brandabschnittsgrenze muss mit einem zugelassenen System wieder verschlossen werden (Kabelschott, Brandschutzmanschette, Kitt, Schaum oder Stein). Kennzeichnungsschild anbringen und dokumentieren.</p>`,
+ merke:"Jedes Loch wieder dicht – mit Zulassung. Bauschaum aus dem Baumarkt ist kein Brandschutz.",
+ bsp:"Neue Leitung vom Keller-UV in den Technikraum durch F90-Wand: Brandschutzkitt nach Zulassung, Schild daneben, Foto in die Doku.",
+ norm:"MLAR, Zulassung (abZ/aBG/ETA)"},
+
+/* ---------- TROCKENBAU ---------- */
+{cat:"hohlwand", q:"Was hält in Gipskarton?",
+ tags:"gipskarton rigips trockenbau hohlraumdübel kippdübel spiraldübel",
+ a:`<ul><li><b>Leicht</b>: Gipskarton-Spiraldübel, Kunststoff-Hohlraumdübel</li>
+<li><b>Mittel</b>: Metall-Hohlraumdübel, Kippdübel</li>
+<li><b>Schwer</b>: nur an Traverse, Holzeinlage oder im Profil – vorher einplanen</li></ul><p>Tragfähigkeit hängt von Plattendicke und -anzahl ab – Datenblatt prüfen.</p>`,
+ merke:"Schwere Geräte an Trockenbau? Rechtzeitig dem Trockenbauer sagen, dass eine Traverse rein muss.",
+ bsp:"Unterverteilung in Trockenbauwand: Montagetraverse im Ständerwerk, sonst hängt der Verteiler irgendwann schief.",
+ norm:"Herstellerangaben"},
+{cat:"hohlwand", q:"Hohlwanddosen – worauf achten?",
+ tags:"hohlwanddose dosensenker 68 luftdicht brandschutzdose",
+ a:`<ul><li>Loch mit 68er Dosensenker, Dose mit Spreizkrallen sauber anziehen</li>
+<li>In gedämmten Außenwänden und Dachschrägen: <b>luftdichte</b> Dosen</li>
+<li>In Brandschutzwänden: nur zugelassene Brandschutz-Hohlwanddosen, gegenüberliegende Dosen versetzt</li></ul>`,
+ merke:"Die Dampfbremse nie einfach durchlöchern – luftdichte Dose oder Installationsebene nutzen.",
+ bsp:"Dachgeschoss mit Dampfbremsfolie: Steckdosen in die Installationsebene vor der Folie setzen.",
+ norm:"Herstellerzulassung, GEG (Luftdichtheit)"},
+{cat:"hohlwand", q:"Leitungen im Ständerwerk führen",
+ tags:"ständerwerk cw profil h-ausschnitt tülle kantenschutz holzständer",
+ a:`<p>Durch die vorgestanzten Ausschnitte der CW-Profile, an scharfen Kanten mit Tülle oder Kantenschutz. Bei Holzständern mittig bohren.</p>`,
+ merke:"Leitungen weg vom Profilrand – da schraubt der Trockenbauer die Platten fest.",
+ bsp:"Leitung senkrecht zur Steckdose: in der Mitte zwischen zwei Profilen führen, nicht direkt am Profil entlang.",
+ norm:"DIN VDE 0100-520"},
+
+/* ---------- TRASSE ---------- */
+{cat:"trasse", q:"Kabelrinne: Wie weit auseinander die Ausleger?",
+ tags:"kabelrinne stützweite ausleger abhänger belastung stoß",
+ a:`<p>Stützweite laut Belastungsdiagramm des Herstellers – in der Praxis oft um 1,2 bis 1,5 m. Stoßstellen möglichst nahe an eine Unterstützung legen, nicht mittig ins Feld.</p>`,
+ merke:"Reserve einplanen – auf jede Trasse kommt später noch was drauf.",
+ bsp:"Senkrechte Steigetrasse: Kabel alle 30–50 cm festbinden, sonst ziehen sie sich durchs Eigengewicht aus den Klemmen.",
+ norm:"Herstellerangaben, DIN VDE 0639"},
+{cat:"trasse", q:"Kabelrinne an Stahlträger – bohren oder klemmen?",
+ tags:"stahlträger trägerklemme trapezblech bohren schweißen halle industrie",
+ a:`<p>Nicht ohne Freigabe in tragende Stahlträger bohren oder schweißen. Trägerklemmen verwenden. An Trapezblech nur zugelassene Abhänger nach Freigabe.</p>`,
+ merke:"Der Stahlbau gehört dem Statiker, nicht dem Elektriker.",
+ bsp:"Industriehalle: Gewindestange mit Trägerklemme am Doppel-T-Träger, daran der Ausleger für die Rinne.",
+ norm:"Herstellerangaben, Statik"},
+{cat:"trasse", q:"Kabelkanal und Brüstungskanal befestigen",
+ tags:"kabelkanal brüstungskanal leitungsführungskanal trennsteg daten starkstrom schwachstrom",
+ a:`<ul><li>Unterteil etwa alle 30–50 cm plus Anfang und Ende</li>
+<li>Senkkopfschrauben, damit der Deckel sauber schließt</li>
+<li>Trennsteg zwischen Starkstrom und Daten/Schwachstrom</li>
+<li>Bei Kunststoff an Stößen kleinen Spalt für Längenausdehnung</li></ul>`,
+ merke:"Stark- und Schwachstrom immer getrennt führen.",
+ bsp:"Büro-Brüstungskanal: 230 V unten, Netzwerk oben, dazwischen Trennsteg.",
+ norm:"DIN VDE 0100-520, DIN EN 50174-2"},
+{cat:"trasse", q:"Installationsrohr aufputz befestigen",
+ tags:"rohr installationsrohr rohrschelle klemmschelle schnappschelle leerrohr",
+ a:`<p>Mit Klemm- bzw. Schnappschellen, Richtwert etwa alle 50–80 cm und jeweils vor und nach Bögen und Dosen. Rohrklasse nach Beanspruchung wählen, außen UV-beständig.</p>`,
+ merke:"Rohr vor Bögen fixieren, sonst drückt es beim Einziehen raus.",
+ bsp:"Werkstatt, Aufputz-Rohr zur Maschine: druckfestes Rohr, Schellen in engem Abstand.",
+ norm:"Herstellerangaben, DIN EN 61386"},
+
+/* ---------- AUSSEN ---------- */
+{cat:"aussen", q:"Leitungen außen an der Fassade",
+ tags:"außen fassade uv nym nyy tropfschlaufe edelstahl",
+ a:`<p>NYM ist nicht UV-beständig – außen ins UV-beständige Rohr oder direkt eine geeignete Leitung wie NYY bzw. H07RN-F. Befestigung aus Edelstahl oder verzinkt.</p>`,
+ merke:"Einführung von unten mit Tropfschlaufe – dann läuft kein Wasser in die Dose.",
+ bsp:"Außensteckdose am Carport: NYY mit Edelstahl-Bügelschellen, Einführung von unten.",
+ norm:"DIN VDE 0100-520, 0298-3"},
+{cat:"aussen", q:"Außenleuchte oder Melder an WDVS montieren",
+ tags:"wdvs dämmung fassade außenleuchte bewegungsmelder montagezylinder dämmstoffdübel",
+ a:`<p>Nie nur in die Dämmung dübeln. Montagequader oder -zylinder (am besten schon beim Dämmen eingeplant) oder nachträglich ein Abstandsmontagesystem bis ins Mauerwerk. Durchführung dicht machen.</p>`,
+ merke:"Dämmung trägt nicht, Putz trägt nicht.",
+ bsp:"Bewegungsmelder am Neubau: vorher mit dem Maler/Stuckateur absprechen, dass an der Stelle ein Montagezylinder eingesetzt wird.",
+ norm:"Herstellerangaben WDVS"},
+{cat:"aussen", q:"Erdkabel verlegen – wie tief?",
+ tags:"erdkabel nyy erde tiefe sandbett warnband garten",
+ a:`<ul><li>Kabel: <b>NYY</b> oder NAYY – NYM gehört nie in die Erde</li>
+<li>Tiefe ca. 0,6 m, unter Fahrbahnen ca. 0,8 m</li>
+<li>Sandbett unten und oben</li>
+<li>Trassenwarnband etwa 20–30 cm über dem Kabel</li>
+<li>Schutzrohr bei Kreuzungen und Gebäudeeinführung</li></ul>`,
+ merke:"Lage einmessen und skizzieren – sonst trifft der nächste Bagger das Kabel.",
+ bsp:"Gartenhaus: NYY-J 5×2,5 im Kabelschutzrohr, Einführung ins Haus mit dichter Mauerdurchführung.",
+ norm:"DIN VDE 0100-520, DIN 18322"},
+
+/* ---------- GERÄTE ---------- */
+{cat:"geraete", q:"Wie befestige ich eine Leuchte sicher?",
+ tags:"leuchte lampe deckenhaken pendel brennbar symbol decke",
+ a:`<ul><li>Nie an der Leitung hängen lassen – außer zugelassene Pendelleitung mit Zugentlastung</li>
+<li>Deckenhaken bzw. Dübel passend zum Gewicht</li>
+<li>Leuchten mit Hinweissymbol „nicht für brennbare Flächen“ nicht auf Holz oder ähnliches montieren</li></ul>`,
+ merke:"Heute sind Leuchten ohne besonderes Symbol für normal entflammbare Flächen geeignet – das alte F-Zeichen gibt es nicht mehr.",
+ bsp:"Schwere Pendelleuchte an Betondecke: Deckenhaken mit Metalldübel, Leitung spannungsfrei in der Baldachin-Klemme.",
+ norm:"DIN VDE 0100-559, DIN EN 60598-1"},
+{cat:"geraete", q:"Zählerschrank und Unterverteilung montieren",
+ tags:"zählerschrank unterverteilung verteiler tab höhe 0,8 1,8 bedienfläche",
+ a:`<ul><li>Tragfähiger Untergrund, mindestens 4 Befestigungspunkte, Wasserwaage</li>
+<li>Zählerschrank: Mitte der Zähler zwischen 0,8 und 1,8 m über Fußboden</li>
+<li>Davor eine freie Bedien- und Arbeitsfläche von mind. 1,20 m Tiefe</li>
+<li>Leitungen mit Zugentlastung einführen</li></ul>`,
+ merke:"Immer die TAB des zuständigen Netzbetreibers dazunehmen – die haben teilweise eigene Regeln.",
+ bsp:"Neubau-Keller: Zählerschrank auf Kalksandstein mit 8er Spreizdübeln, Leerrohre von oben rein.",
+ norm:"VDE-AR-N 4100, TAB, DIN VDE 0603"},
+{cat:"geraete", q:"Wallbox montieren – worauf achten?",
+ tags:"wallbox ladestation e-auto anmeldung netzbetreiber 11 kw",
+ a:`<ul><li>Gerät plus Ladekabel wiegen einiges – feste Wand, Befestigung nach Hersteller</li>
+<li>An WDVS mit Montagesystem, an Trockenbau mit Traverse</li>
+<li>Halter für das Ladekabel einplanen</li>
+<li>Beim Netzbetreiber: bis 11 kW anmelden, über 11 kW genehmigen lassen</li></ul>`,
+ merke:"Montagehöhe und Abstände stehen in der Anleitung der Wallbox – die zählt.",
+ bsp:"Garage mit Porenbetonwand: Porenbetondübel oder Injektionsmörtel, nicht die Standard-Dübel aus dem Karton.",
+ norm:"VDE-AR-N 4100, Herstellerangaben"},
+{cat:"geraete", q:"Bad: Wo darf was montiert werden?",
+ tags:"bad dusche wanne schutzbereich bereich 0 1 2 steckdose ip fi rcd 60 cm",
+ a:`<ul><li><b>Bereich 0</b>: innen in Wanne/Dusche</li>
+<li><b>Bereich 1</b>: über Wanne/Dusche bis 2,25 m hoch</li>
+<li><b>Bereich 2</b>: 60 cm um Bereich 1 herum</li>
+<li>Steckdosen außerhalb von Bereich 2, in Bereich 1 und 2 mind. IPX4</li>
+<li>Alle Stromkreise im Bad mit RCD 30 mA</li></ul>`,
+ merke:"Steckdose am Waschtisch: mind. 60 cm Abstand zur Dusche oder Wanne.",
+ bsp:"Spiegelschrank neben der Dusche: prüfen, ob er in Bereich 2 fällt – dann IPX4 und keine Steckdose drin.",
+ norm:"DIN VDE 0100-701"}
+];
+
+/* ---------- Suche & Liste ---------- */
+const norm = s => s.toLowerCase().replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue").replace(/ß/g,"ss");
+E.forEach(e => e.text = norm([e.q,e.a,e.merke,e.bsp,e.norm,e.tags,CATS[e.cat].name].join(" ").replace(/<[^>]+>/g," ")));
+let active = "alle";
+const chips = document.getElementById("chips"), list = document.getElementById("list"),
+      qIn = document.getElementById("q"), count = document.getElementById("count"), gl = document.getElementById("google");
+
+function catColor(k){return CATS[k].c}
+function renderChips(){
+  const all = [["alle","Alle Themen",null]].concat(Object.entries(CATS).map(([k,v])=>[k,v.name,k]));
+  chips.innerHTML = all.map(([k,n,c]) =>
+    `<button class="chip" data-k="${k}" aria-pressed="${k===active}">${c?`<span class="dot" style="background:${catColor(c)}"></span>`:""}${n}</button>`).join("");
+}
+function render(){
+  const raw = qIn.value.trim();
+  const words = norm(raw).split(/\s+/).filter(Boolean);
+  const hits = E.filter(e => (active==="alle"||e.cat===active) && words.every(w => e.text.includes(w)));
+  gl.href = "https://www.google.com/search?q=" + encodeURIComponent("VDE " + (raw || "Befestigung"));
+  count.textContent = raw ? `${hits.length} Treffer für „${raw}“` : `${hits.length} Fragen`;
+  if(!hits.length){
+    list.innerHTML = `<div class="empty"><p>Dazu steht hier noch nichts. Anderen Begriff probieren oder direkt googeln.</p>
+      <a class="gbtn" style="padding:10px 16px;display:inline-flex" target="_blank" rel="noopener" href="${gl.href}">„VDE ${raw.replace(/[<>&"]/g,"")}“ googeln</a></div>`;
+    return;
+  }
+  const openAll = words.length && hits.length <= 3;
+  list.innerHTML = hits.map(e => {
+    return `<details class="entry" style="--cat:${CATS[e.cat].c}"${openAll?" open":""}>
+      <summary><span class="q">${e.q}</span><span class="pm" aria-hidden="true">+</span></summary>
+      <div class="body">${e.a}
+        <div class="merke"><b>Merke:</b> ${e.merke}</div>
+        <div class="bsp"><b>Praxis:</b> ${e.bsp}</div>
+        <div class="norm">${CATS[e.cat].name} · ${e.norm}</div>
+      </div></details>`;
+  }).join("");
+}
+chips.addEventListener("click", ev => { const b = ev.target.closest(".chip"); if(!b) return; active = b.dataset.k; renderChips(); render(); });
+qIn.addEventListener("input", () => { if(document.getElementById("wissen").hidden) showTab("wissen"); render(); });
+qIn.addEventListener("keydown", ev => { if(ev.key==="Enter"){ qIn.blur(); }});
+renderChips(); render();
+
+/* ---------- Tabs ---------- */
+function showTab(t){
+  document.querySelectorAll(".tab").forEach(b => b.setAttribute("aria-selected", b.dataset.tab===t));
+  ["wissen","tools","aufmass","quiz"].forEach(id => document.getElementById(id).hidden = id!==t);
+}
+document.querySelectorAll(".tab").forEach(b => b.addEventListener("click", () => showTab(b.dataset.tab)));
+
+/* ---------- Dübel-Finder ---------- */
+const DF = {
+ beton:{l:"Nageldübel/Schlagdübel oder Setzgerät mit Clip.", m:"Spreizdübel 6–8 mm oder Betonschraube.", s:"Betonschraube oder Bolzenanker nach Zulassung.", b:"Mit Schlag bohren, Bohrloch ausblasen. Auf Bewehrung achten – bei Treffer versetzen."},
+ voll:{l:"Schlag- oder Spreizdübel 6 mm.", m:"Spreiz- oder Universaldübel 8 mm.", s:"Universaldübel 10 mm oder Injektionsmörtel mit Ankerstange.", b:"Mit Schlag bohren. Nicht in die Fuge."},
+ loch:{l:"Universaldübel 6 mm, lang genug.", m:"Langer Universaldübel 8 mm.", s:"Injektionsmörtel mit Siebhülse und Ankerstange.", b:"Ohne Schlag bohren! Sonst brechen die Stege und nichts hält."},
+ poren:{l:"Porenbetondübel oder Universaldübel.", m:"Porenbetondübel (Spiral/Keil) 8–10 mm.", s:"Injektionsmörtel für Porenbeton oder Spezialanker.", b:"Ohne Schlag, eher etwas kleiner bohren."},
+ gk:{l:"Gipskarton-Spiraldübel oder Kunststoff-Hohlraumdübel.", m:"Metall-Hohlraumdübel oder Kippdübel.", s:"Nicht in die Platte – nur an Traverse, Holzeinlage oder Profil.", b:"Ohne Schlag. Plattendicke messen, Dübel danach auswählen."},
+ holz:{l:"Holzschraube direkt, kein Dübel.", m:"Holzschraube 5 mm, ausreichend lang.", s:"Holzschrauben 6 mm oder Schlüsselschrauben, in tragendes Holz.", b:"Bei Hartholz vorbohren, Abstand zum Rand halten."},
+ wdvs:{l:"Nur leichte Kabelclips mit Dämmstoffdübel.", m:"Montagezylinder/-quader oder Abstandsmontagesystem bis ins Mauerwerk.", s:"Abstandsmontagesystem mit Zulassung bis ins tragende Mauerwerk.", b:"Nie nur in die Dämmung. Durchführung abdichten."}
+};
+const ug = document.getElementById("ug"), last = document.getElementById("last"), dOut = document.getElementById("duebelOut");
+function duebel(){ const d = DF[ug.value]; dOut.innerHTML = `<div class="big">${d[last.value]}</div><p style="margin:6px 0 0">${d.b}</p>`; }
+ug.addEventListener("change", duebel); last.addEventListener("change", duebel); duebel();
+
+/* ---------- Schraubenrechner ---------- */
+const ids = ["dl","at","pu","sd"], sOut = document.getElementById("schraubeOut");
+function schraube(){
+  const [dl,at,pu,sd] = ids.map(i => Math.max(0, parseFloat(document.getElementById(i).value.replace(",", "."))||0));
+  const min = pu + dl + at + sd, bohr = pu + dl + 10;
+  const std = [30,35,40,45,50,55,60,70,80,90,100,110,120,140,160,180,200];
+  const pick = std.find(x => x >= min);
+  sOut.innerHTML = `<div class="big">Schraube mind. ${min} mm${pick?` → ${sd}×${pick}`:""}</div>
+    <p style="margin:6px 0 0">Bohrtiefe ca. ${bohr} mm. ${pu>0?"Der Dübel muss komplett hinter dem Putz im Stein sitzen.":""}</p>`;
+}
+ids.forEach(i => document.getElementById(i).addEventListener("input", schraube)); schraube();
+
+/* ---------- Abstände ---------- */
+// typische Außendurchmesser in mm (ca., je nach Hersteller)
+const DM = {
+  NYM:{"3x1.5":8.5,"4x1.5":9.2,"5x1.5":10,"7x1.5":11,"3x2.5":9.5,"4x2.5":10.3,"5x2.5":11,"3x4":11,"5x4":13,"3x6":12.5,"5x6":14.5,"3x10":15.5,"5x10":18,"5x16":21.5},
+  NYY:{"3x1.5":11.5,"5x1.5":13,"3x2.5":12.5,"5x2.5":14,"3x4":14,"5x4":16,"3x6":15,"5x6":17.5,"5x10":20,"5x16":23,"4x25":27,"5x25":29,"4x35":29,"4x50":33}
+};
+const ld = document.getElementById("ld");
+document.getElementById("ldChips").innerHTML = ["NYM 3x1,5","NYM 5x1,5","NYM 3x2,5","NYM 5x2,5","NYM 5x6","NYY 5x16"]
+  .map(t => `<button class="chip" data-t="${t}">${t.replace("x","×")}</button>`).join("");
+document.getElementById("ldChips").addEventListener("click", ev => { const b = ev.target.closest(".chip"); if(b){ ld.value = b.dataset.t; abst(); } });
+function abst(){
+  const raw = ld.value.trim(), out = document.getElementById("ldOut");
+  const m = /(\d+)\s*[x×*]\s*(\d+(?:[.,]\d+)?)/i.exec(raw);
+  let d = 0, info = "";
+  if(m){
+    const typ = /nyy/i.test(raw) ? "NYY" : "NYM";
+    const key = m[1] + "x" + String(parseFloat(m[2].replace(",", ".")));
+    d = DM[typ][key] || 0;
+    const name = `${typ}-J ${m[1]}×${m[2].replace(".", ",")}`;
+    if(!d){ out.innerHTML = `<p style="margin:0">${name} ist nicht hinterlegt – Außen-Ø aus dem Datenblatt direkt eingeben.</p>`; markiere(0); return; }
+    info = `${name}${/ny[my]/i.test(raw) ? "" : " (NYM angenommen)"} · Außen-Ø ca. ${f2(d,1)} mm`;
+  } else {
+    d = num(raw) || 0;
+    if(!d){ out.innerHTML = `<p style="margin:0">Leitungstyp wie „3x2,5“ oder „NYY 5x16“ eingeben – oder den Außen-Ø in mm.</p>`; markiere(0); return; }
+    info = `Außen-Ø ${f2(d,1)} mm`;
+  }
+  const r = markiere(d);
+  let anz = "";
+  const L = num(document.getElementById("ldL").value);
+  if(r && L > 0){
+    const aw = parseFloat(r.cells[1].textContent)/100, as = parseFloat(r.cells[2].textContent)/100;
+    anz = `<p style="margin:6px 0 0">Für ${f2(L,1)} m: ca. <b>${Math.ceil(L/aw)+1} Schellen</b> waagerecht bzw. <b>${Math.ceil(L/as)+1}</b> senkrecht – plus je 2 pro Bogen und Dose.</p>`;
+  }
+  out.innerHTML = r ? `<div class="big">waagerecht ${r.cells[1].textContent} · senkrecht ${r.cells[2].textContent}</div><p style="margin:6px 0 0">${info}</p>${anz}`
+                    : `<p style="margin:0">${info} – über 40 mm: Abstände laut Hersteller bzw. auf Kabelrinne verlegen.</p>`;
+}
+function markiere(d){
+  let hitRow = null;
+  document.querySelectorAll("#abst tbody tr").forEach(r => {
+    const hit = !hitRow && d>0 && d <= +r.dataset.max; r.classList.toggle("hit", hit); if(hit) hitRow = r;
+  });
+  return hitRow;
+}
+ld.addEventListener("input", abst);
+document.getElementById("ldL").addEventListener("input", abst);
+
+/* ---------- Quiz ---------- */
+const Q = [
+ ["Obere waagerechte Installationszone: Vorzugsmaß unter der Rohdecke?", ["15 cm","30 cm","50 cm","60 cm"],1,"Die Zone geht von 15 bis 45 cm unter der Rohdecke, Vorzugsmaß ist 30 cm."],
+ ["Senkrechte Installationszone neben Türen und Fenstern?", ["0–10 cm","10–30 cm","30–60 cm","egal, Hauptsache senkrecht"],1,"10 bis 30 cm neben Rohbaukanten, Vorzugsmaß 15 cm."],
+ ["Wie bohrt man in Lochziegel?", ["mit Schlag","ohne Schlag","mit Kernbohrer","mit Diamantscheibe"],1,"Ohne Schlag – sonst brechen die Stege und das Loch wird zu groß."],
+ ["Dübel 40 mm, Anbauteil 5 mm, Schraube 5 mm, kein Putz. Wie lang muss die Schraube mindestens sein?", ["40 mm","45 mm","50 mm","60 mm"],2,"40 + 5 + 5 = 50 mm. Die Spitze muss hinten aus dem Dübel raus."],
+ ["Leitungen im notwendigen Flur offen verlegt – womit befestigen?", ["Kunststoffschellen","Kabelbinder","nichtbrennbare Befestigung (Metall)","Klebesockel"],2,"Nach MLAR mit nichtbrennbaren Befestigungsmitteln, damit im Brand nichts herunterfällt."],
+ ["Mindest-Biegeradius NYM fest verlegt (Richtwert)?", ["1× Durchmesser","4× Durchmesser","12× Durchmesser","20× Durchmesser"],1,"Etwa 4× Außendurchmesser. NYY braucht deutlich mehr."],
+ ["Darf NYM direkt ins Erdreich?", ["Ja","Nur im Sandbett","Nein","Nur unter 30 cm"],2,"Nein – in die Erde gehört z. B. NYY oder NAYY."],
+ ["Wie weit reicht Bereich 2 im Bad um Wanne bzw. Dusche?", ["30 cm","60 cm","1 m","1,20 m"],1,"60 cm – Steckdosen gehören außerhalb dieses Bereichs."],
+ ["Außenleuchte an WDVS-Fassade: Was ist richtig?", ["Langer Dübel in die Dämmung","Montagezylinder oder Abstandsmontage bis ins Mauerwerk","Kleben reicht","Dämmstoffdübel reicht immer"],1,"Dämmung trägt nicht – Befestigung muss bis in den tragenden Untergrund."],
+ ["In welcher Höhe muss die Zählermitte im Zählerschrank liegen?", ["0,3–1,0 m","0,8–1,8 m","1,5–2,2 m","beliebig"],1,"Nach VDE-AR-N 4100 zwischen 0,8 und 1,8 m über Fußboden."],
+ ["Kabelrinne an tragendem Stahlträger in der Halle?", ["Einfach anbohren","Anschweißen","Trägerklemmen verwenden","Mit Kabelbindern"],2,"Ohne Freigabe nicht bohren oder schweißen – Trägerklemmen sind der Standard."],
+ ["Was ist beim Funktionserhalt E30 geprüft?", ["nur das Kabel","nur der Dübel","das komplette System aus Kabel, Halterung und Abständen","nur die Schelle"],2,"Nach DIN 4102-12 wird das ganze System geprüft – keine Mischsysteme."],
+ ["Wallbox mit 11 kW – was ist beim Netzbetreiber zu tun?", ["nichts","anmelden","genehmigen lassen","nur bei Mietwohnungen melden"],1,"Bis 11 kW anmelden, über 11 kW genehmigen lassen."],
+ ["Schalter neben der Tür: übliche Höhe (Mitte) über Fertigfußboden?", ["85 cm","105 cm","130 cm","150 cm"],1,"Vorzugsmaß 105 cm. Barrierefrei 85 cm."]
+];
+let order=[], qi=0, score=0;
+const box = document.getElementById("quizBox");
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function startQuiz(){ order = shuffle([...Q.keys()]).slice(0,10); qi=0; score=0; showQ(); }
+function showQ(){
+  if(qi>=order.length){
+    const txt = score>=9?"Stark – das sitzt.":score>=6?"Solide. Die falschen nochmal nachschlagen.":"Da geht noch was – ab in den Tab „Nachschlagen“.";
+    box.innerHTML = `<div class="qmeta"><span>Ergebnis</span></div><h2>${score} von ${order.length} richtig</h2><p>${txt}</p><button class="pbtn" id="again">Neue Runde starten</button>`;
+    document.getElementById("again").onclick = startQuiz; return;
+  }
+  const [q,opts,right,ex] = Q[order[qi]];
+  box.innerHTML = `<div class="qmeta"><span>Frage ${qi+1} von ${order.length}</span><span>${score} richtig</span></div>
+    <div class="bar"><i style="width:${qi/order.length*100}%"></i></div>
+    <h2>${q}</h2>${opts.map((o,i)=>`<button class="opt" data-i="${i}">${o}</button>`).join("")}<div id="after"></div>`;
+  box.querySelectorAll(".opt").forEach(b => b.onclick = () => {
+    const i = +b.dataset.i;
+    box.querySelectorAll(".opt").forEach(x => { x.disabled = true; if(+x.dataset.i===right) x.classList.add("right"); });
+    if(i===right) score++; else b.classList.add("wrong");
+    document.getElementById("after").innerHTML = `<div class="explain">${i===right?"Richtig. ":"Nicht ganz. "}${ex}</div><button class="pbtn" id="next">${qi+1<order.length?"Nächste Frage":"Ergebnis anzeigen"}</button>`;
+    const n = document.getElementById("next"); n.onclick = () => { qi++; showQ(); }; n.focus();
+  });
+}
+startQuiz();
+
+/* ---------- Leitungsberechnung ---------- */
+const QS = [1.5,2.5,4,6,10,16,25,35,50];
+const LS = [6,10,13,16,20,25,32,40,50,63,80,100,125];
+// Belastbarkeit Cu, PVC 70 °C, 30 °C Umgebung: [2 belastete Adern, 3 belastete Adern]
+const IZ = {
+  A1:[[15.5,13.5],[19.5,18],[26,24],[34,31],[46,42],[61,56],[80,73],[99,89],[119,108]],
+  A2:[[15.5,13],[18.5,17.5],[25,23],[32,29],[43,39],[57,52],[75,68],[92,83],[110,99]],
+  B1:[[17.5,15.5],[24,21],[32,28],[41,36],[57,50],[76,68],[101,89],[125,110],[151,134]],
+  B2:[[16.5,15],[23,20],[30,27],[38,34],[52,46],[69,62],[90,80],[111,99],[133,118]],
+  C:[[19.5,17.5],[27,24],[36,32],[46,41],[63,57],[85,76],[112,96],[138,119],[168,144]],
+  E:[[22,18.5],[30,25],[40,34],[51,43],[70,60],[94,80],[119,101],[148,126],[180,153]]
+};
+const num = v => parseFloat(String(v).replace(",", "."));
+const f2 = (n,d=2) => Number(n).toLocaleString("de-DE",{minimumFractionDigits:0,maximumFractionDigits:d});
+const lIds = ["lNetz","lArt","lWert","lL","lCos","lMax","lKappa","lVa","lHf","lT"];
+function leitung(){
+  const g = id => document.getElementById(id).value;
+  document.getElementById("lWertLbl").textContent = g("lArt")==="P" ? "Leistung (kW)" : "Strom (A)";
+  const drei = g("lNetz")==="3", U = drei?400:230, cos = Math.min(1,Math.max(0.1,num(g("lCos"))||1));
+  const w = num(g("lWert")), L = num(g("lL")), maxP = num(g("lMax"))||3, k = num(g("lKappa"));
+  const out = document.getElementById("lOut"), tab = document.getElementById("lTab");
+  if(!(w>0) || !(L>0)){ out.innerHTML = `<p style="margin:0">Leistung bzw. Strom und Länge eingeben.</p>`; tab.innerHTML=""; return; }
+  const I = g("lArt")==="I" ? w : (w*1000)/((drei?Math.sqrt(3):1)*U*cos);
+  const fak = (drei?Math.sqrt(3):2)*L*I*cos/k;
+  const faktor = num(g("lHf"))*num(g("lT"));
+  const adern = drei?1:0;
+  const inMin = LS.find(x => x >= I);
+  const rows = QS.map((A,i) => {
+    const du = fak/A, dp = du/U*100, iz = IZ[g("lVa")][i][adern]*faktor;
+    const okDu = dp <= maxP, okIz = inMin && inMin <= iz;
+    return {A,du,dp,iz,okDu,okIz};
+  });
+  const rec = rows.find(r => r.okDu && r.okIz);
+  const aDu = fak/(maxP/100*U);
+  let html = `<div class="kv"><div>Betriebsstrom<b>${f2(I,1)} A</b></div><div>Min. Querschnitt wegen ΔU<b>${f2(aDu)} mm²</b></div>`;
+  if(rec){
+    const lsMax = LS.filter(x => x>=I && x<=rec.iz).pop();
+    html += `<div>Empfehlung<b>${f2(rec.A)} mm² · LS ${inMin} A</b></div></div>
+      <p style="margin:8px 0 0">Spannungsfall bei ${f2(rec.A)} mm²: ${f2(rec.du)} V = ${f2(rec.dp)} %. Belastbarkeit Iz ${f2(rec.iz,1)} A – höchstens LS ${lsMax} A zulässig.</p>`;
+  } else html += `</div><p style="margin:8px 0 0" class="st-bad">Bis 50 mm² keine Lösung – Länge, Last oder Verlegeart prüfen.</p>`;
+  out.innerHTML = html;
+  tab.innerHTML = `<thead><tr><th>mm²</th><th>ΔU</th><th>ΔU %</th><th>Iz</th><th>passt?</th></tr></thead><tbody>` +
+    rows.map(r => `<tr class="${r===rec?"rec":""}"><td>${f2(r.A)}</td><td>${f2(r.du)} V</td><td class="${r.okDu?"st-ok":"st-bad"}">${f2(r.dp)} %</td><td class="${r.okIz?"":"st-bad"}">${f2(r.iz,1)} A</td><td>${r.okDu&&r.okIz?"ja":!r.okIz?"Iz zu klein":"ΔU zu hoch"}</td></tr>`).join("") + `</tbody>`;
+}
+lIds.forEach(id => { const el = document.getElementById(id); el.addEventListener("input", leitung); el.addEventListener("change", leitung); });
+leitung(); abst();
+
+/* ---------- Kabelrinne ---------- */
+const KABEL = [["NYM-J 3×1,5",0.12],["NYM-J 5×1,5",0.18],["NYM-J 3×2,5",0.17],["NYM-J 5×2,5",0.25],["NYM-J 5×6",0.5],["NYM-J 5×10",0.78],
+  ["NYM-J 5×16",1.15],["NYY-J 5×16",1.2],["NYY-J 5×25",1.75],["NYY-J 4×50",2.5],["Datenkabel Cat.7",0.08]];
+document.getElementById("krKabelGrid").innerHTML = KABEL.map((k,i) =>
+  `<div><label for="kk${i}">${k[0]} <span style="color:var(--muted);font-weight:400">(${f2(k[1])} kg/m)</span></label><input id="kk${i}" data-kg="${k[1]}" type="text" inputmode="numeric" placeholder="0"></div>`).join("");
+function rinne(){
+  const g = id => document.getElementById(id).value;
+  const L = num(g("krL")), a = num(g("krA")), F = Math.max(0, Math.round(num(g("krF"))||0)), teil = num(g("krTeil")), art = g("krArt");
+  const out = document.getElementById("krOut");
+  if(!(L > 0)){ out.innerHTML = `<p style="margin:0">Trassenlänge eingeben.</p>`; return; }
+  const stuetzen = Math.ceil(L/a) + 1 + F;
+  const rinnen = Math.ceil(L/teil);
+  const verbinder = Math.max(0, rinnen - 1) + F*2;
+  const duebel = stuetzen * 2;
+  let kabelKg = 0, kabelAnz = 0;
+  document.querySelectorAll("#krKabelGrid input").forEach(el => { const n = Math.max(0, num(el.value)||0); kabelKg += n * +el.dataset.kg; kabelAnz += n; });
+  const q = (num(g("krG"))||0) + kabelKg, proStuetze = q * a;
+  const mat = [`<li><b>${stuetzen}</b> ${art==="wand" ? "Wandausleger" : art==="stiel" ? "Hängestiele mit Ausleger" : "Trapezabhängungen"}${F?` (davon ${F} extra an Bögen/Abzweigen)`:""}</li>`,
+    `<li><b>${rinnen}</b> Rinnen à ${f2(teil)} m, <b>${verbinder}</b> Verbinder</li>`,
+    `<li><b>${duebel}</b> Dübel bzw. Anker${art==="trapez" ? `, <b>${stuetzen*2}</b> Gewindestangen` : ""}</li>`];
+  out.innerHTML = `<div class="big">${stuetzen} Stützen · alle ${f2(a)} m</div><ul class="mat">${mat.join("")}</ul>
+    <p style="margin:6px 0 0">Streckenlast ca. <b>${f2(q,1)} kg/m</b>${kabelAnz?` (Rinne + ${kabelAnz} Kabel)`:" (nur Rinne – Kabel oben eintragen)"} → Last pro Stütze ca. <b>${f2(proStuetze,1)} kg</b>.</p>`;
+}
+["krL","krA","krArt","krTeil","krF","krG"].forEach(id => { const el = document.getElementById(id); el.addEventListener("input", rinne); el.addEventListener("change", rinne); });
+document.getElementById("krKabelGrid").addEventListener("input", rinne);
+rinne();
+
+/* ---------- Rohrschellen ---------- */
+// Richtwerte Schellenabstand in m [waagerecht, senkrecht] für Kunststoff-Installationsrohr
+const RS = {M16:[0.6,0.8],M20:[0.6,0.8],M25:[0.8,1.0],M32:[0.8,1.0],M40:[1.0,1.2],M50:[1.0,1.2]};
+function rsVorschlag(){ const v = RS[document.getElementById("rsD").value][document.getElementById("rsDir").value==="s"?1:0]; document.getElementById("rsA").value = String(v).replace(".", ","); rohr(); }
+function rohr(){
+  const g = id => document.getElementById(id).value;
+  const L = num(g("rsL")), a = num(g("rsA")), B = Math.max(0, Math.round(num(g("rsB"))||0)), D = Math.max(0, Math.round(num(g("rsDo"))||0));
+  const out = document.getElementById("rsOut");
+  if(!(L > 0) || !(a > 0)){ out.innerHTML = `<p style="margin:0">Rohrlänge und Schellenabstand eingeben.</p>`; return; }
+  const grund = Math.ceil(L/a) + 1, extra = 2*B + 2*D, summe = grund + extra, reserve = Math.ceil(summe*1.1);
+  const stangen = Math.ceil(L/3), muffen = Math.max(0, stangen-1);
+  out.innerHTML = `<div class="big">${summe} Schellen ${g("rsD")} · alle ${f2(a)} m</div>
+    <ul class="mat"><li>${grund} auf der Strecke${extra?`, ${extra} an Bögen/Dosen`:""}</li>
+    <li>mit 10 % Reserve: <b>${reserve}</b> Schellen und ebenso viele Dübel/Schrauben</li>
+    <li><b>${stangen}</b> Rohrstangen à 3 m, <b>${muffen}</b> Muffen${B?`, <b>${B}</b> Bögen`:""}</li></ul>`;
+}
+document.getElementById("rsD").addEventListener("change", rsVorschlag);
+document.getElementById("rsDir").addEventListener("change", rsVorschlag);
+["rsA","rsL","rsB","rsDo"].forEach(id => document.getElementById(id).addEventListener("input", rohr));
+rsVorschlag();
+
+/* ---------- Rechenansatz auswerten ---------- */
+function rechne(src){
+  const s = String(src||"").replace(/\s+/g,"").replace(/,/g,".").replace(/[×xX]/g,"*").replace(/:/g,"/");
+  if(!s) return NaN;
+  let i = 0;
+  const peek = () => s[i];
+  function zahl(){ const m = /^\d*\.?\d+/.exec(s.slice(i)); if(!m) throw 0; i += m[0].length; return parseFloat(m[0]); }
+  function faktor(){
+    if(peek()==="-"){ i++; return -faktor(); }
+    if(peek()==="+"){ i++; return faktor(); }
+    if(peek()==="("){ i++; const v = summe(); if(peek()!==")") throw 0; i++; return v; }
+    return zahl();
+  }
+  function produkt(){ let v = faktor(); while(peek()==="*"||peek()==="/"){ const o = s[i++]; const r = faktor(); v = o==="*" ? v*r : v/r; } return v; }
+  function summe(){ let v = produkt(); while(peek()==="+"||peek()==="-"){ const o = s[i++]; const r = produkt(); v = o==="+" ? v+r : v-r; } return v; }
+  try { const v = summe(); if(i !== s.length || !isFinite(v)) return NaN; return Math.round(v*1000)/1000; } catch(e){ return NaN; }
+}
+/* ---------- Aufmaß-PDF ---------- */
+function pdfTxt(s){
+  return String(s == null ? "" : s)
+    .replace(/[\u2013\u2014]/g,"-").replace(/[\u201E\u201C\u201D]/g,'"').replace(/[\u2018\u2019\u201A]/g,"'")
+    .replace(/\u2026/g,"...").replace(/\u00B2/g,"2").replace(/\u00B3/g,"3").replace(/\u20AC/g,"EUR").replace(/[^\x0A\x20-\x7E\xA0-\xFF]/g,"");
+}
+function fmtNum(n){
+  if(n == null || isNaN(n)) return "";
+  return Number(n).toLocaleString("de-DE",{minimumFractionDigits:0,maximumFractionDigits:2});
+}
+function fmtDatum(d){ if(!d) return ""; const p = d.split("-"); return p.length===3 ? `${p[2]}.${p[1]}.${p[0]}` : d; }
+function gruppiere(pos){
+  const order = [], map = {};
+  pos.forEach(p => { const b = (p.bereich||"").trim() || "Allgemein"; if(!map[b]){ map[b]=[]; order.push(b);} map[b].push(p); });
+  return order.map((b,i) => ({name:b, nr:i+1, pos:map[b]}));
+}
+function summen(pos){
+  const m = {};
+  pos.forEach(p => { const k = (p.bez||"").trim()+"|"+(p.einheit||""); if(!m[k]) m[k]={bez:(p.bez||"").trim(),einheit:p.einheit||"",menge:0}; m[k].menge += Number(p.menge)||0; });
+  return Object.values(m).sort((a,b)=>a.bez.localeCompare(b.bez,"de"));
+}
+
+function buildAufmassPDF(JsPDF, pr, firma){
+  const doc = new JsPDF({unit:"mm", format:"a4"});
+  const W = 210, M = 15, ink = [31,36,48], grey = [107,114,128];
+  const T = pdfTxt;
+  firma = firma || {};
+
+  function kopf(){
+    for(let k=0;k<70;k++){ const t=k/69; doc.setFillColor(Math.round(181+(26-181)*t), Math.round(23+(159-23)*t), Math.round(158+(216-158)*t)); doc.rect(k*W/70,0,W/70+0.3,1.5,"F"); }
+    doc.setTextColor(...ink);
+    doc.setFont("helvetica","bold"); doc.setFontSize(13);
+    doc.text(T(firma.name || "Elektrobetrieb"), M, 14);
+    doc.setFont("helvetica","normal"); doc.setFontSize(8.5); doc.setTextColor(...grey);
+    const zeilen = [firma.strasse, [firma.plz, firma.ort].filter(Boolean).join(" "), [firma.tel?("Tel. "+firma.tel):"", firma.mail].filter(Boolean).join("   ")].filter(Boolean);
+    zeilen.forEach((z,i) => doc.text(T(z), M, 19 + i*3.8));
+    doc.setTextColor(...ink); doc.setFont("helvetica","bold"); doc.setFontSize(20);
+    doc.text("Aufmaß", W-M, 15, {align:"right"});
+    doc.setDrawColor(...ink); doc.setLineWidth(0.3); doc.line(M, 31, W-M, 31);
+  }
+
+  kopf();
+  // Projektblock
+  let y = 38;
+  const felder = [
+    ["Bauvorhaben", pr.name], ["Kunde", pr.kunde], ["Adresse", pr.adresse],
+    ["Auftrags-Nr.", pr.auftragsnr], ["Datum", fmtDatum(pr.datum)], ["Aufgemessen von", pr.bearbeiter]
+  ].filter(f => f[1]);
+  doc.setFontSize(9.5);
+  const half = Math.ceil(felder.length/2);
+  felder.forEach((f,i) => {
+    const col = i < half ? 0 : 1, row = i < half ? i : i-half;
+    const x = M + col*92, yy = y + row*6;
+    doc.setFont("helvetica","normal"); doc.setTextColor(...grey); doc.text(T(f[0]), x, yy);
+    doc.setFont("helvetica","bold"); doc.setTextColor(...ink);
+    doc.text(doc.splitTextToSize(T(f[1]), 58)[0], x+30, yy);
+  });
+  y += half*6 + 4;
+
+  const common = {
+    margin:{left:M, right:M, top:36, bottom:22},
+    styles:{font:"helvetica", fontSize:9, cellPadding:1.8, textColor:ink, lineColor:[227,229,234], lineWidth:0.2, overflow:"linebreak"},
+    headStyles:{fillColor:ink, textColor:255, fontStyle:"bold"},
+    alternateRowStyles:{fillColor:[246,247,249]},
+    didDrawPage: d => { if(d.pageNumber > 1) kopf(); }
+  };
+
+  const gruppen = gruppiere(pr.positionen || []);
+  const alle = pr.positionen || [];
+  const mitAnsatz = alle.some(p => { const a = String(p.ansatz||"").trim(); return a && !/^\d+([.,]\d+)?$/.test(a); });
+  const mitBem = alle.some(p => (p.bem||"").trim());
+  const eineGruppe = gruppen.length === 1 && gruppen[0].name === "Allgemein";
+  const spalten = [["Pos.",12,(p,g,i)=>eineGruppe?`${i+1}`:`${g.nr}.${i+1}`],["Bezeichnung",mitAnsatz?52:(mitBem?80:"auto"),p=>T(p.bez)]];
+  if(mitAnsatz) spalten.push(["Rechenansatz",38,p=>T(p.ansatz).replace(/\*/g,"\u00D7")]);
+  spalten.push(["Menge",20,p=>fmtNum(p.menge)],["Einh.",14,p=>T(p.einheit)]);
+  if(mitBem) spalten.push(["Bemerkung","auto",p=>T(p.bem)]);
+  const cs = {}; spalten.forEach((s,i) => { cs[i] = {cellWidth:s[1]}; if(s[0]==="Menge"){ cs[i].halign="right"; cs[i].fontStyle="bold"; } });
+  gruppen.forEach(g => {
+    if(y > 255){ doc.addPage(); kopf(); y = 38; }
+    if(!eineGruppe){ doc.setFont("helvetica","bold"); doc.setFontSize(11); doc.setTextColor(...ink); doc.text(T(`${g.nr}  ${g.name}`), M, y); }
+    doc.autoTable(Object.assign({}, common, {
+      startY: eineGruppe ? y - 4 : y + 2,
+      head:[spalten.map(s=>s[0])],
+      body: g.pos.map((p,i) => spalten.map(s => s[2](p,g,i))),
+      columnStyles: cs
+    }));
+    y = doc.lastAutoTable.finalY + 9;
+  });
+
+  // Zusammenstellung (nur wenn sie mehr zeigt als die Liste)
+  const sum = summen(alle);
+  if(sum.length && (!eineGruppe || sum.length < alle.length)){
+    if(y > 240){ doc.addPage(); kopf(); y = 38; }
+    doc.setFont("helvetica","bold"); doc.setFontSize(11); doc.setTextColor(...ink);
+    doc.text("Zusammenstellung", M, y);
+    doc.autoTable(Object.assign({}, common, {
+      startY: y + 2,
+      head:[["Bezeichnung","Menge gesamt","Einheit"]],
+      body: sum.map(s => [T(s.bez), fmtNum(s.menge), T(s.einheit)]),
+      columnStyles:{0:{cellWidth:120},1:{cellWidth:32,halign:"right",fontStyle:"bold"},2:{cellWidth:"auto"}}
+    }));
+    y = doc.lastAutoTable.finalY + 9;
+  }
+
+  if(pr.notiz){
+    doc.setFont("helvetica","normal"); doc.setFontSize(9.5);
+    const lines = doc.splitTextToSize(T(pr.notiz), W-2*M);
+    if(y + 8 + lines.length*4.2 > 270){ doc.addPage(); kopf(); y = 38; }
+    doc.setFont("helvetica","bold"); doc.setFontSize(11); doc.text("Bemerkungen", M, y);
+    doc.setFont("helvetica","normal"); doc.setFontSize(9.5); doc.text(lines, M, y+6);
+    y += 8 + lines.length*4.2 + 4;
+  }
+
+  // Unterschriften
+  if(y > 245){ doc.addPage(); kopf(); y = 38; }
+  y = Math.max(y + 12, 250);
+  doc.setDrawColor(...ink); doc.setLineWidth(0.3);
+  const bw = (W - 2*M - 16)/3;
+  ["Ort, Datum","Auftraggeber","Auftragnehmer"].forEach((t,i) => {
+    const x = M + i*(bw+8);
+    doc.line(x, y, x+bw, y);
+    doc.setFont("helvetica","normal"); doc.setFontSize(8.5); doc.setTextColor(...grey); doc.text(t, x, y+4);
+  });
+
+  // Fußzeile
+  const n = doc.getNumberOfPages();
+  for(let i=1;i<=n;i++){
+    doc.setPage(i);
+    doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor(...grey);
+    doc.setDrawColor(200,205,202); doc.line(M, 284, W-M, 284);
+    doc.text(T(`Aufmaß ${pr.name||""}`), M, 288);
+    doc.text(`Seite ${i} von ${n}`, W-M, 288, {align:"right"});
+  }
+  return doc;
+}
+
+/* ---------- Aufmaß: Daten ---------- */
+const VORLAGEN = [
+ ["Steckdose UP 1-fach","Stk"],["Steckdose UP 2-fach","Stk"],["Schalter Aus/Wechsel","Stk"],["Serienschalter","Stk"],["Taster","Stk"],
+ ["Leuchtenauslass","Stk"],["Netzwerkdose 2× RJ45","Stk"],["Abzweigdose","Stk"],["Gerätedose UP","Stk"],
+ ["NYM-J 3×1,5 mm²","m"],["NYM-J 5×1,5 mm²","m"],["NYM-J 3×2,5 mm²","m"],["NYM-J 5×2,5 mm²","m"],["Datenkabel Cat.7","m"],
+ ["Leerrohr M20","m"],["Leerrohr M25","m"],["Kabelkanal","m"],["Schlitz fräsen","m"],["Kernbohrung","Stk"],["Montagestunden","h"]
+];
+const AM = { geloescht:new Set(), db:null, local:false, projekte:{}, firma:{}, aktuell:null, editPos:null, pending:{}, chain:Promise.resolve() };
+const LKEY = "aufmass-v1";
+const $ = id => document.getElementById(id);
+const clone = o => JSON.parse(JSON.stringify(o||{}));
+const esc = s => String(s==null?"":s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const neueId = () => Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+const heute = () => { const d = new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); };
+
+let statusT;
+function meldung(t, ms=2200){ const el = $("amStatus"); el.textContent = t; clearTimeout(statusT); if(ms) statusT = setTimeout(()=>el.textContent="", ms); }
+function dbFehler(e){
+  const c = e && e.code;
+  if(c==="quota_exceeded") meldung("Speicher voll – alte Projekte löschen, dann erneut speichern.", 6000);
+  else if(c==="invalid_argument") meldung("Speichern nicht erlaubt – für dieses Konto sind nur Leserechte freigegeben.", 6000);
+  else meldung("Speichern fehlgeschlagen – bitte gleich nochmal versuchen.", 5000);
+}
+function localLaden(){ try { const d = JSON.parse(localStorage.getItem(LKEY)||"{}"); AM.projekte = d.projekte||{}; AM.firma = d.firma||{}; } catch(e){} }
+function localSpeichern(){ try { localStorage.setItem(LKEY, JSON.stringify({projekte:AM.projekte, firma:AM.firma})); } catch(e){ meldung("Speichern auf diesem Gerät fehlgeschlagen.", 5000); } }
+
+function speichern(id){
+  AM.pending[id] = (AM.pending[id]||0) + 1;
+  AM.chain = AM.chain.then(async () => {
+    const p = AM.projekte[id]; if(!p) return;
+    p.geaendert = Date.now();
+    if(AM.db) await AM.db.doc("projekte/"+id).set(clone(p)); else localSpeichern();
+  }).catch(dbFehler).finally(() => { AM.pending[id]--; });
+  return AM.chain;
+}
+let kopfT;
+function kopfSpeichern(){ clearTimeout(kopfT); kopfT = setTimeout(() => AM.aktuell && speichern(AM.aktuell), 700); }
+
+async function amStart(){
+  let db = null;
+  try { if(window.claude && window.claude.use) db = await window.claude.use("db"); } catch(e){ db = null; }
+  AM.db = db;
+  if(db){
+    $("amMode").textContent = "Projekte werden in deinem Konto gespeichert und sind auf allen Geräten da, auf denen du diese Seite öffnest.";
+    db.collection("projekte").onSnapshot(snap => {
+      const neu = {};
+      snap.docs.forEach(d => { if(AM.geloescht.has(d.id)) return; neu[d.id] = (AM.pending[d.id] > 0 && AM.projekte[d.id]) ? AM.projekte[d.id] : clone(d.data()); });
+      if(AM.aktuell && AM.pending[AM.aktuell] > 0 && AM.projekte[AM.aktuell]) neu[AM.aktuell] = AM.projekte[AM.aktuell];
+      AM.projekte = neu;
+      amRender(true);
+    }, e => { meldung("Verbindung zur Projektliste verloren – Seite neu laden.", 0); });
+    try { const f = await db.doc("einstellungen/firma").get(); if(f.exists) AM.firma = clone(f.data()); } catch(e){}
+  } else {
+    AM.local = true; localLaden();
+    $("amMode").textContent = "Alle Projekte werden auf diesem Gerät gespeichert – auch ohne Internet."; sicherungsHinweis();
+    amRender();
+  }
+}
+
+/* ---------- Aufmaß: Ansichten ---------- */
+function zeige(view){ ["amListView","amProjView","amFirmaView"].forEach(v => $(v).hidden = v!==view); window.scrollTo({top:0}); }
+
+function amRender(vonSnapshot){
+  if(!$("amListView").hidden) listeRender();
+  if(!$("amProjView").hidden){
+    if(!AM.projekte[AM.aktuell]){ if(vonSnapshot){ AM.aktuell=null; zeige("amListView"); listeRender(); } return; }
+    projektRender();
+  }
+}
+function listeRender(){
+  const arr = Object.entries(AM.projekte).sort((a,b) => (b[1].geaendert||0)-(a[1].geaendert||0));
+  $("amListe").innerHTML = arr.length ? arr.map(([id,p]) => {
+    const n = (p.positionen||[]).length;
+    return `<button class="amcard${p.status==="fertig"?" fertig":""}" data-id="${id}"><b>${esc(p.name||"Ohne Namen")}</b>
+      <span>${[esc(p.kunde), p.datum?fmtDatum(p.datum):"", n+(n===1?" Position":" Positionen"), p.status==="fertig"?"fertig":"in Arbeit"].filter(Boolean).join(" · ")}</span></button>`;
+  }).join("") : `<div class="empty"><p>Noch kein Projekt angelegt. Mit „Neues Projekt“ startest du dein erstes Aufmaß.</p></div>`;
+}
+function projektOeffnen(id){
+  AM.aktuell = id; AM.editPos = null; formLeeren(true);
+  const p = AM.projekte[id];
+  $("amKopf").open = !(p.positionen||[]).length;
+  document.querySelectorAll("#amKopf [data-f]").forEach(el => el.value = p[el.dataset.f]||"");
+  zeige("amProjView"); projektRender();
+}
+function projektRender(){
+  const p = AM.projekte[AM.aktuell]; if(!p) return;
+  $("amTitel").textContent = p.name || "Ohne Namen";
+  document.querySelectorAll("#amKopf [data-f]").forEach(el => { if(document.activeElement!==el) el.value = p[el.dataset.f]||""; });
+  $("amFertig").textContent = p.status==="fertig" ? "Wieder öffnen" : "Als fertig markieren";
+  const pos = p.positionen||[];
+  const bereiche = [...new Set(pos.map(x => (x.bereich||"").trim()).filter(Boolean))];
+  $("amBereiche").innerHTML = bereiche.map(b => `<option value="${esc(b)}">`).join("");
+  const bez = [...new Set(VORLAGEN.map(v=>v[0]).concat(pos.map(x=>x.bez)).filter(Boolean))];
+  $("amBezListe").innerHTML = bez.map(b => `<option value="${esc(b)}">`).join("");
+  const gr = gruppiere(pos);
+  const erw = AM.modus === "erweitert";
+  const gruppiert = erw || gr.length > 1 || (gr[0] && gr[0].name !== "Allgemein");
+  const zeile = (x,nr) => {
+    const a = String(x.ansatz||"").trim(), zeigA = a && !/^\d+([.,]\d+)?$/.test(a);
+    const klein = [zeigA ? esc(a) : "", x.bem ? esc(x.bem) : ""].filter(Boolean).join(" · ");
+    return `<button class="posrow${AM.editPos===x.id?" edit":""}" data-id="${x.id}"><span class="nr">${nr}</span>
+      <span class="bz">${esc(x.bez)}${klein?`<small>${klein}</small>`:""}</span>
+      <span class="mg">${fmtNum(x.menge)} ${esc(x.einheit)}</span></button>`;
+  };
+  $("amPos").innerHTML = !gr.length
+    ? `<p class="hint">${erw ? "Noch keine Positionen. Raum eintragen, Bezeichnung antippen, Rechenansatz eingeben – fertig." : "Noch keine Positionen. Bezeichnung antippen, Menge eingeben, hinzufügen – fertig."}</p>`
+    : gruppiert
+      ? gr.map(g => `<div class="grp"><h3>${g.nr}  ${esc(g.name)}</h3>` + g.pos.map((x,i) => zeile(x, `${g.nr}.${i+1}`)).join("") + `</div>`).join("")
+      : `<div class="grp">` + gr[0].pos.map((x,i) => zeile(x, i+1)).join("") + `</div>`;
+  const sm = summen(pos);
+  $("amSumme").hidden = !sm.length;
+  $("amSumme").innerHTML = `<h3>Zusammenstellung</h3><div class="tw"><table><thead><tr><th>Bezeichnung</th><th style="text-align:right">Menge</th><th>Einheit</th></tr></thead><tbody>` +
+    sm.map(s => `<tr><td>${esc(s.bez)}</td><td style="text-align:right;font-weight:600">${fmtNum(s.menge)}</td><td>${esc(s.einheit)}</td></tr>`).join("") + `</tbody></table></div>`;
+}
+
+/* ---------- Aufmaß: Formular ---------- */
+$("amQuick").innerHTML = VORLAGEN.map((v,i) => `<button class="chip" data-i="${i}">${esc(v[0])}</button>`).join("");
+$("amQuick").addEventListener("click", ev => {
+  const b = ev.target.closest(".chip"); if(!b) return;
+  const v = VORLAGEN[+b.dataset.i]; $("af-bez").value = v[0]; $("af-einheit").value = v[1];
+  if(AM.modus!=="erweitert" && !$("af-ansatz").value && v[1]==="Stk") $("af-ansatz").value = "1";
+  $("af-ansatz").focus();
+});
+$("af-bez").addEventListener("change", () => {
+  const v = VORLAGEN.find(x => x[0]===$("af-bez").value.trim());
+  const alt = (AM.projekte[AM.aktuell]?.positionen||[]).find(x => x.bez===$("af-bez").value.trim());
+  if(v) $("af-einheit").value = v[1]; else if(alt) $("af-einheit").value = alt.einheit;
+});
+function ergebnis(){
+  const src = $("af-ansatz").value, v = rechne(src), el = $("af-erg");
+  if(!src.trim()){ el.textContent = ""; el.classList.remove("err"); return; }
+  if(isNaN(v)){ el.textContent = "Rechenansatz nicht lesbar – erlaubt sind Zahlen, + − × / und Klammern."; el.classList.add("err"); }
+  else { el.textContent = "= " + fmtNum(v) + " " + $("af-einheit").value; el.classList.remove("err"); }
+}
+$("af-ansatz").addEventListener("input", ergebnis); $("af-einheit").addEventListener("change", ergebnis);
+function formLeeren(alles){
+  if(alles) $("af-bereich").value = "";
+  ["af-bez","af-ansatz","af-bem"].forEach(i => $(i).value = "");
+  $("af-einheit").value = "Stk"; ergebnis();
+  AM.editPos = null; $("amFormTitel").textContent = "Position erfassen"; $("afSave").textContent = "Hinzufügen";
+  $("afCancel").hidden = true; $("afDel").hidden = true; $("afDel").dataset.sure = ""; $("afDel").textContent = "Löschen";
+}
+$("afSave").addEventListener("click", () => {
+  const p = AM.projekte[AM.aktuell]; if(!p) return;
+  const bez = $("af-bez").value.trim(), ansatz = $("af-ansatz").value.trim(), menge = rechne(ansatz);
+  if(!bez){ meldung("Bezeichnung fehlt."); $("af-bez").focus(); return; }
+  if(isNaN(menge)){ meldung(AM.modus==="erweitert" ? "Rechenansatz fehlt oder ist nicht lesbar." : "Menge fehlt."); $("af-ansatz").focus(); return; }
+  const daten = { bereich:(AM.modus==="erweitert" || AM.editPos) ? $("af-bereich").value.trim() : "", bez, einheit:$("af-einheit").value, ansatz, menge, bem:$("af-bem").value.trim() };
+  p.positionen = p.positionen || [];
+  if(AM.editPos){ const x = p.positionen.find(q => q.id===AM.editPos); if(x) Object.assign(x, daten); meldung("Position geändert."); }
+  else { p.positionen.push(Object.assign({id:neueId()}, daten)); meldung("Position hinzugefügt."); }
+  formLeeren(false); speichern(AM.aktuell); projektRender();
+  $("af-bez").focus();
+});
+$("amPos").addEventListener("click", ev => {
+  const b = ev.target.closest(".posrow"); if(!b) return;
+  const x = (AM.projekte[AM.aktuell].positionen||[]).find(q => q.id===b.dataset.id); if(!x) return;
+  AM.editPos = x.id;
+  $("af-bereich").value = x.bereich||""; $("af-bez").value = x.bez||""; $("af-einheit").value = x.einheit||"Stk";
+  $("af-ansatz").value = x.ansatz||""; $("af-bem").value = x.bem||""; ergebnis();
+  $("amFormTitel").textContent = "Position bearbeiten"; $("afSave").textContent = "Speichern";
+  $("afCancel").hidden = false; $("afDel").hidden = false; $("afDel").textContent = "Löschen"; $("afDel").dataset.sure = "";
+  projektRender(); $("amForm").scrollIntoView({behavior:"smooth", block:"start"});
+});
+$("afCancel").addEventListener("click", () => { formLeeren(false); projektRender(); });
+$("afDel").addEventListener("click", () => {
+  const b = $("afDel");
+  if(!b.dataset.sure){ b.dataset.sure = "1"; b.textContent = "Wirklich löschen?"; return; }
+  const p = AM.projekte[AM.aktuell];
+  p.positionen = (p.positionen||[]).filter(q => q.id!==AM.editPos);
+  formLeeren(false); speichern(AM.aktuell); projektRender(); meldung("Position gelöscht.");
+});
+
+/* ---------- Aufmaß: Projekt-Aktionen ---------- */
+$("amNew").addEventListener("click", () => {
+  const id = AM.db ? AM.db.collection("projekte").doc().id : neueId();
+  AM.projekte[id] = { name:"Neues Projekt", kunde:"", adresse:"", auftragsnr:"", datum:heute(), bearbeiter:AM.firma.bearbeiter||"", notiz:"", status:"offen", positionen:[], erstellt:Date.now(), geaendert:Date.now() };
+  speichern(id); projektOeffnen(id); $("amKopf").open = true;
+  const n = $("pf-name"); n.focus(); n.select();
+});
+$("amListe").addEventListener("click", ev => { const b = ev.target.closest(".amcard"); if(b) projektOeffnen(b.dataset.id); });
+$("amBack").addEventListener("click", () => { AM.aktuell = null; zeige("amListView"); listeRender(); });
+document.querySelectorAll("#amKopf [data-f]").forEach(el => el.addEventListener("input", () => {
+  const p = AM.projekte[AM.aktuell]; if(!p) return;
+  p[el.dataset.f] = el.value;
+  if(el.dataset.f==="name") $("amTitel").textContent = el.value || "Ohne Namen";
+  if(el.dataset.f==="bearbeiter") AM.firma.bearbeiter = el.value;
+  kopfSpeichern();
+}));
+$("amFertig").addEventListener("click", () => {
+  const p = AM.projekte[AM.aktuell]; p.status = p.status==="fertig" ? "offen" : "fertig";
+  speichern(AM.aktuell); projektRender(); meldung(p.status==="fertig" ? "Als fertig markiert." : "Wieder in Arbeit.");
+});
+$("amDel").addEventListener("click", async () => {
+  const b = $("amDel");
+  if(!b.dataset.sure){ b.dataset.sure = "1"; b.textContent = "Wirklich löschen?"; setTimeout(()=>{ b.dataset.sure=""; b.textContent="Projekt löschen"; }, 4000); return; }
+  const id = AM.aktuell; b.dataset.sure = ""; b.textContent = "Projekt löschen";
+  AM.geloescht.add(id); delete AM.projekte[id]; AM.aktuell = null; zeige("amListView"); listeRender();
+  try { if(AM.db) await AM.db.doc("projekte/"+id).delete(); else localSpeichern(); meldung("Projekt gelöscht."); } catch(e){ dbFehler(e); }
+});
+
+/* ---------- Firmendaten ---------- */
+$("amFirmaBtn").addEventListener("click", () => {
+  document.querySelectorAll("#amFirmaView [data-f]").forEach(el => el.value = AM.firma[el.dataset.f]||"");
+  zeige("amFirmaView");
+});
+$("amFirmaBack").addEventListener("click", () => { zeige("amListView"); listeRender(); });
+$("ffSave").addEventListener("click", async () => {
+  document.querySelectorAll("#amFirmaView [data-f]").forEach(el => AM.firma[el.dataset.f] = el.value.trim());
+  try { if(AM.db) await AM.db.doc("einstellungen/firma").set(clone(AM.firma)); else localSpeichern(); meldung("Firmendaten gespeichert."); zeige("amListView"); listeRender(); }
+  catch(e){ dbFehler(e); }
+});
+
+/* ---------- Dateien ausgeben (teilen oder speichern) ---------- */
+function herunterladen(blob, name){
+  const u = URL.createObjectURL(blob), a = document.createElement("a");
+  a.href = u; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(u), 15000);
+}
+async function teilenOderSpeichern(blob, name, typ){
+  try {
+    const f = new File([blob], name, {type:typ});
+    if(navigator.canShare && navigator.canShare({files:[f]})){
+      await navigator.share({files:[f], title:name});
+      return "geteilt";
+    }
+  } catch(e){ if(e && e.name === "AbortError") return "abbruch"; }
+  herunterladen(blob, name); return "gespeichert";
+}
+
+/* ---------- PDF ---------- */
+function pdfBauen(){
+  const p = AM.projekte[AM.aktuell]; if(!p) return null;
+  if(!(p.positionen||[]).length){ meldung("Erst Positionen erfassen, dann PDF erstellen."); return null; }
+  const JsPDF = window.jspdf && window.jspdf.jsPDF;
+  if(!JsPDF || !JsPDF.API.autoTable){ meldung("PDF-Modul fehlt – App neu starten.", 5000); return null; }
+  const doc = buildAufmassPDF(JsPDF, p, AM.firma);
+  const name = "Aufmass_" + (p.name||"Projekt").replace(/[^\wäöüÄÖÜß-]+/g,"_").slice(0,60) + "_" + (p.datum||heute()) + ".pdf";
+  return { blob: doc.output("blob"), name };
+}
+$("amPdf").addEventListener("click", async () => {
+  const r = pdfBauen(); if(!r) return;
+  const st = await teilenOderSpeichern(r.blob, r.name, "application/pdf");
+  if(st === "gespeichert") meldung("PDF im Download-Ordner gespeichert.", 3500);
+});
+$("amPdfSave").addEventListener("click", () => {
+  const r = pdfBauen(); if(!r) return;
+  herunterladen(r.blob, r.name); meldung("PDF im Download-Ordner gespeichert.", 3500);
+});
+
+/* ---------- Sicherung ---------- */
+function sicherungsHinweis(){
+  let t = 0; try { t = +localStorage.getItem("aufmass-letzte-sicherung") || 0; } catch(e){}
+  const n = Object.keys(AM.projekte).length, el = $("amBackupInfo");
+  if(!n){ el.textContent = ""; return; }
+  if(!t){ el.textContent = "Noch keine Sicherung erstellt. Tipp: ab und zu sichern und die Datei z. B. in Drive oder per Mail ablegen."; return; }
+  const tage = Math.floor((Date.now()-t)/86400000);
+  el.textContent = "Letzte Sicherung: " + new Date(t).toLocaleDateString("de-DE") + (tage >= 14 ? " – mal wieder sichern." : "");
+}
+$("amBackup").addEventListener("click", async () => {
+  const daten = { app:"elektro-werkzeugkasten", version:1, erstellt:new Date().toISOString(), projekte:AM.projekte, firma:AM.firma };
+  const d = new Date(), stamp = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  const blob = new Blob([JSON.stringify(daten, null, 1)], {type:"application/json"});
+  const st = await teilenOderSpeichern(blob, "Elektro-Sicherung_" + stamp + ".json", "application/json");
+  if(st !== "abbruch"){ try { localStorage.setItem("aufmass-letzte-sicherung", String(Date.now())); } catch(e){} sicherungsHinweis();
+    meldung(st === "gespeichert" ? "Sicherung im Download-Ordner gespeichert." : "Sicherung geteilt.", 3500); }
+});
+$("amRestore").addEventListener("click", () => $("amRestoreFile").click());
+$("amRestoreFile").addEventListener("change", async ev => {
+  const f = ev.target.files && ev.target.files[0]; ev.target.value = ""; if(!f) return;
+  try {
+    const d = JSON.parse(await f.text());
+    if(!d || d.app !== "elektro-werkzeugkasten" || typeof d.projekte !== "object") throw 0;
+    let neu = 0, ersetzt = 0;
+    Object.entries(d.projekte).forEach(([id,p]) => {
+      if(!p || typeof p !== "object") return;
+      const alt = AM.projekte[id];
+      if(!alt){ AM.projekte[id] = p; neu++; }
+      else if((p.geaendert||0) > (alt.geaendert||0)){ AM.projekte[id] = p; ersetzt++; }
+    });
+    if(d.firma && typeof d.firma === "object" && !Object.values(AM.firma).some(Boolean)) AM.firma = d.firma;
+    localSpeichern(); listeRender(); sicherungsHinweis();
+    meldung(`Sicherung geladen: ${neu} neu, ${ersetzt} aktualisiert.`, 4000);
+  } catch(e){ meldung("Das ist keine gültige Sicherungsdatei.", 4000); }
+});
+
+/* ---------- Einfach / Erweitert ---------- */
+function setModus(m){
+  AM.modus = m === "erweitert" ? "erweitert" : "einfach";
+  try { localStorage.setItem("aufmass-modus", AM.modus); } catch(e){}
+  const sec = $("aufmass"); sec.classList.toggle("einfach", AM.modus==="einfach"); sec.classList.toggle("erweitert", AM.modus==="erweitert");
+  document.querySelectorAll(".seg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.mode===AM.modus));
+  $("af-ansatz-lbl").textContent = AM.modus==="erweitert" ? "Rechenansatz" : "Menge";
+  $("af-ansatz").placeholder = AM.modus==="erweitert" ? "z. B. 3,5+2*4" : "0";
+  if(!$("amProjView").hidden) projektRender();
+}
+document.querySelectorAll(".seg button").forEach(b => b.addEventListener("click", () => setModus(b.dataset.mode)));
+function schritt(d){
+  const v = rechne($("af-ansatz").value); const n = Math.max(0, (isNaN(v)?0:v) + d);
+  $("af-ansatz").value = String(n).replace(".", ","); ergebnis();
+}
+$("afMinus").addEventListener("click", () => schritt(-1));
+$("afPlus").addEventListener("click", () => schritt(1));
+let startModus = "einfach"; try { startModus = localStorage.getItem("aufmass-modus") || "einfach"; } catch(e){}
+setModus(startModus);
+amStart();
+try { if(navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch(e){}
+if("serviceWorker" in navigator){ window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {})); }
+
+</script>
+</body>
+</html>
