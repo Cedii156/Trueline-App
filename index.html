@@ -9,6 +9,12 @@
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" href="icons/favicon-64.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<script>
+// Hell/Dunkel sofort setzen, damit die Seite beim Start nicht kurz falsch aufblitzt
+try { var tlD = localStorage.getItem("trueline-design");
+  if(tlD === "hell") document.documentElement.dataset.theme = "light";
+  else if(tlD === "dunkel") document.documentElement.dataset.theme = "dark"; } catch(e){}
+</script>
 <style>
 @font-face{font-family:"Barlow";font-weight:400;font-display:swap;src:url(fonts/barlow-latin-400-normal.woff2) format("woff2")}
 @font-face{font-family:"Barlow";font-weight:500;font-display:swap;src:url(fonts/barlow-latin-500-normal.woff2) format("woff2")}
@@ -49,7 +55,10 @@ button{-webkit-tap-highlight-color:transparent}
 header{padding:18px 0 14px}
 .plate{background:var(--card);border-radius:var(--r);padding:20px 18px 18px;box-shadow:var(--shadow);position:relative;overflow:hidden}
 .plate::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--grad)}
-.plate h1{margin:4px 0 2px;font-size:clamp(30px,8vw,42px);line-height:1;letter-spacing:.2px}
+.plate h1{margin:4px 0 2px;font-size:clamp(30px,8vw,42px);line-height:1;letter-spacing:.2px;display:flex;align-items:center;gap:12px}
+.logo{width:44px;height:44px;flex:none;display:block}
+.dhead h2{display:flex;align-items:center;gap:10px}
+.dhead .logo{width:34px;height:34px}
 .plate h1 span{color:inherit}
 .plate p{margin:6px 0 14px;font-size:16px;color:var(--muted)}
 .search{display:flex;gap:8px}
@@ -198,9 +207,11 @@ select,.tool input,.tool textarea,.entry input,.entry textarea{width:100%;font:i
 .back{background:none;border:0;color:var(--ink);font:600 16px "Barlow",sans-serif;padding:12px 0 4px;cursor:pointer}
 .amtop{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 .amtitel{font-size:30px;line-height:1.1;margin:4px 0 10px}
-.seg{display:inline-flex;background:var(--card);border-radius:10px;padding:3px;box-shadow:var(--shadow)}
-.seg button{border:0;background:transparent;color:var(--muted);font:600 15px "Barlow",sans-serif;padding:6px 12px;border-radius:8px;cursor:pointer}
-.seg button[aria-pressed="true"]{background:var(--ink);color:var(--card)}
+.seg,.seg2{display:inline-flex;background:var(--card);border-radius:10px;padding:3px;box-shadow:var(--shadow)}
+.seg button,.seg2 button{border:0;background:transparent;color:var(--muted);font:600 15px "Barlow",sans-serif;padding:6px 12px;border-radius:8px;cursor:pointer}
+.seg button[aria-pressed="true"],.seg2 button[aria-pressed="true"]{background:var(--ink);color:var(--card)}
+.seg2{display:flex;background:var(--field);border:1px solid var(--line);box-shadow:none}
+.seg2 button{flex:1;padding:9px 8px;font-size:16px}
 .amstatus{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 84px);background:var(--ink);color:var(--card);padding:8px 14px;border-radius:10px;font-size:15px;z-index:9;max-width:90vw}
 .amstatus:empty{display:none}
 .quick{display:grid;grid-auto-flow:column;grid-template-rows:repeat(2,auto);justify-content:start;gap:6px;overflow-x:auto;margin:0 -16px 12px;padding:0 16px 4px;scrollbar-width:thin}
@@ -224,14 +235,36 @@ select,.tool input,.tool textarea,.entry input,.entry textarea{width:100%;font:i
 .btnrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
 footer{color:var(--muted);font-size:14px;padding:18px 0 100px}
 [hidden]{display:none!important}
+
+/* Tablet quer / breite Bildschirme: Karten in zwei Spalten, Formulare bleiben schmal */
+@media (min-width:960px){
+  .wrap{max-width:1180px;padding:0 24px}
+  #list,#plaeneListe{display:grid;grid-template-columns:1fr 1fr;gap:0 14px;align-items:start}
+  #list > .empty{grid-column:1/-1}
+  #tools{display:grid;grid-template-columns:1fr 1fr;gap:0 14px;align-items:start}
+  #tools > :not(details){grid-column:1/-1}
+  #aufmass,#quiz,#einst{max-width:760px;margin:0 auto}
+  .plan{max-width:480px}
+  .bnav-in{max-width:900px}
+}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="tl-verlauf" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#B5179E"/><stop offset="1" stop-color="#1A9FD8"/></linearGradient>
+    <symbol id="tl-logo" viewBox="0 0 512 512">
+      <rect width="512" height="512" rx="96" fill="#1F2430"/>
+      <polygon points="288,88 308,88 265,226 354,226 218,422 247,277 158,277" fill="#FFFFFF"/>
+      <rect x="153" y="445" width="205" height="13" rx="2" fill="url(#tl-verlauf)"/>
+    </symbol>
+  </defs>
+</svg>
 <div class="wrap">
 <header>
   <div class="plate">
-    <h1>Trueline</h1>
+    <h1><svg class="logo" aria-hidden="true"><use href="#tl-logo"/></svg>Trueline</h1>
     <p>Nachschlagen, rechnen, aufmessen: Befestigung nach VDE, Leitungsberechnung und Aufmaß mit PDF.</p>
     <div class="search" role="search">
       <input id="q" type="search" placeholder="z. B. Lochziegel, Flur, Bad, Wallbox …" aria-label="Suchbegriff" autocomplete="off">
@@ -469,7 +502,12 @@ footer{color:var(--muted);font-size:14px;padding:18px 0 100px}
 <section id="einst" hidden>
   <div class="tool">
     <h2>Einstellungen</h2>
-    <h3 style="margin-top:14px">Untere Leiste</h3>
+    <h3 style="margin-top:14px">Darstellung</h3>
+    <div class="seg2" id="designWahl" role="group" aria-label="Darstellung">
+      <button data-design="system">System</button><button data-design="hell">Hell</button><button data-design="dunkel">Dunkel</button>
+    </div>
+    <p class="hint">„System“ passt sich automatisch an dein Handy an – hell am Tag, dunkel wenn dort der Dunkelmodus an ist.</p>
+    <h3 style="margin-top:20px">Untere Leiste</h3>
     <p class="sub">Wähle bis zu 4 Bereiche für den Schnellzugriff unten. Alles andere findest du im Menü (☰). Mit ↑ ↓ änderst du die Reihenfolge.</p>
     <div id="leisteListe"></div>
     <p class="hint" id="leisteHinweis"></p>
@@ -480,14 +518,14 @@ footer{color:var(--muted);font-size:14px;padding:18px 0 100px}
 
 <div id="amStatus" class="amstatus" aria-live="polite"></div>
 <footer>
-  Richtwerte für die Praxis. Verbindlich sind die aktuellen Normen (DIN VDE, DIN), die TAB des Netzbetreibers, die Leitungsanlagen-Richtlinie des jeweiligen Bundeslandes und die Herstellerangaben bzw. Zulassungen der Befestigungsmittel. Stand: September 2026 · App-Version 1.1
+  Richtwerte für die Praxis. Verbindlich sind die aktuellen Normen (DIN VDE, DIN), die TAB des Netzbetreibers, die Leitungsanlagen-Richtlinie des jeweiligen Bundeslandes und die Herstellerangaben bzw. Zulassungen der Befestigungsmittel. Stand: September 2026 · App-Version 1.3
 </footer>
 </div>
 
 <nav class="bnav" aria-label="Schnellzugriff"><div class="bnav-in" id="bnav"></div></nav>
 <div class="scrim" id="scrim" hidden></div>
 <aside class="drawer" id="drawer" aria-label="Menü" aria-hidden="true">
-  <div class="dhead"><h2>Trueline</h2><button class="dclose" id="dclose" aria-label="Menü schließen"></button></div>
+  <div class="dhead"><h2><svg class="logo" aria-hidden="true"><use href="#tl-logo"/></svg>Trueline</h2><button class="dclose" id="dclose" aria-label="Menü schließen"></button></div>
   <div id="drawerListe"></div>
 </aside>
 
@@ -911,6 +949,18 @@ document.getElementById("leisteListe").addEventListener("click", ev => {
 });
 document.getElementById("leisteReset").addEventListener("click", () => { leiste = LEISTE_STD.slice(); leisteGeaendert(); });
 
+// Darstellung: System / Hell / Dunkel (die Farben stehen im CSS unter data-theme)
+const DESIGN_KEY = "trueline-design";
+function designSetzen(w, speichern){
+  if(!["system","hell","dunkel"].includes(w)) w = "system";
+  const el = document.documentElement;
+  if(w === "hell") el.dataset.theme = "light"; else if(w === "dunkel") el.dataset.theme = "dark"; else delete el.dataset.theme;
+  if(speichern){ try { localStorage.setItem(DESIGN_KEY, w); } catch(e){} }
+  document.querySelectorAll("#designWahl button").forEach(b => b.setAttribute("aria-pressed", b.dataset.design === w));
+}
+document.getElementById("designWahl").addEventListener("click", ev => { const b = ev.target.closest("[data-design]"); if(b) designSetzen(b.dataset.design, true); });
+{ let d = "system"; try { d = localStorage.getItem(DESIGN_KEY) || "system"; } catch(e){} designSetzen(d, false); }
+
 /* ---------- Schaltpläne ---------- */
 const SP = {
   w:(x1,y1,x2,y2,k) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"${k?` class="${k}"`:""}/>`,
@@ -924,6 +974,11 @@ const SP = {
   schliesser:(x,y,n) => SP.w(x,y,x-10,y) + SP.w(x,y+36,x-16,y+5) + SP.t(x+8,y+24,n),
   // Taster = Schließer mit Betätigung
   taster:(x,y,n) => SP.schliesser(x,y,n) + SP.w(x-8,y+20.5,x-26,y+20.5,"dash") + `<polyline points="${x-22},${y+14} ${x-26},${y+14} ${x-26},${y+27} ${x-22},${y+27}"/>`,
+  // Öffner-Taster (geschlossen), y = oberer Anschluss (36 hoch)
+  oeffnerTaster:(x,y,n) => SP.w(x,y,x+12,y) + SP.w(x,y+36,x+14,y-3) + SP.t(x+20,y+24,n)
+    + SP.w(x+7,y+18,x-20,y+18,"dash") + `<polyline points="${x-16},${y+11} ${x-20},${y+11} ${x-20},${y+25} ${x-16},${y+25}"/>`,
+  // Klemmenbezeichnung links neben einem Kontakt
+  klemmen:(x,y,a,b) => SP.t(x-30,y+6,a,"klein") + SP.t(x-30,y+38,b,"klein"),
   // Wechsler, gemeinsamer Anschluss oben, Kontakte unten bei x±16 (36 hoch), p = "l"/"r" Schaltstellung
   wechslerOben:(x,y,n,p) => SP.w(x-16,y+36,x-16,y+32) + SP.w(x+16,y+36,x+16,y+32) + SP.w(x,y,x+(p==="l"?-16:16),y+32) + SP.t(x+24,y+18,n),
   // Wechsler, Kontakte oben bei x±16, gemeinsamer Anschluss unten (36 hoch)
@@ -969,11 +1024,29 @@ const PLAENE = [
      +SP.t(40,298,"Steuerstromkreis","klein")+SP.t(200,298,"Hauptstromkreis","klein"),
    text:`<p>Jeder Tastendruck gibt einen Stromstoß auf die Spule des Stromstoßschalters K1. Sein Kontakt schaltet dann abwechselnd ein und aus.</p>
    <ul><li><b>Taster:</b> 2 Adern – L und Tasterleitung zur Spule (A1)</li><li>Alle Taster werden parallel angeschlossen, beliebig viele.</li><li><b>Stromstoßschalter:</b> in der Verteilung oder in einer Dose, Kontakt schaltet die Leuchte</li></ul>
-   <div class="merke"><b>Merke:</b> Spulenspannung auf dem Gerät prüfen (230 V oder Kleinspannung). Beleuchtete Taster nur, wenn der Stromstoßschalter dafür geeignet ist – Herstellerangabe beachten.</div>`}
+   <div class="merke"><b>Merke:</b> Spulenspannung auf dem Gerät prüfen (230 V oder Kleinspannung). Beleuchtete Taster nur, wenn der Stromstoßschalter dafür geeignet ist – Herstellerangabe beachten.</div>`},
+  {ico:"K", titel:"Schützschaltung", kurz:"Verbraucher über ein Schütz mit einem Schalter schalten", fuss:"Einphasig mit Leuchte vereinfacht. Bei Drehstrom schalten die Hauptkontakte 1-2, 3-4 und 5-6 alle drei Außenleiter.",
+   svg: SP.dot(90,30)+SP.w(90,30,90,80)+SP.schliesser(90,80,"S1")+SP.w(90,116,90,170)+SP.spule(90,170,"K1")+SP.w(90,188,90,280)+SP.dot(90,280)
+     +SP.dot(230,30)+SP.w(230,30,230,90)+SP.schliesser(230,90,"K1")+SP.klemmen(230,90,"1","2")+SP.w(230,126,230,190)+SP.lampe(230,190,"E1")+SP.w(230,216,230,280)+SP.dot(230,280)
+     +SP.t(40,298,"Steuerstromkreis","klein")+SP.t(190,298,"Hauptstromkreis","klein"),
+   text:`<p>Der Schalter S1 schaltet nur die Spule des Schützes K1 (A1/A2). Das Schütz zieht an und sein Hauptkontakt schaltet den Verbraucher. So schaltet ein kleiner Schalter eine große Last.</p>
+   <ul><li><b>Steuerstromkreis:</b> L → Schalter S1 → Spule A1, A2 → N</li><li><b>Hauptstromkreis:</b> L → Hauptkontakt K1 (1-2) → Verbraucher → N</li></ul>
+   <div class="merke"><b>Merke:</b> Spulenspannung auf dem Schütz prüfen. Klemmen: Hauptkontakte 1-2, 3-4, 5-6 · Hilfskontakte 13-14 Schließer, 21-22 Öffner · Spule A1-A2.</div>
+   <div class="bsp"><b>Praxis:</b> Statt S1 steuert oft eine Zeitschaltuhr oder ein Dämmerungsschalter das Schütz, z. B. für Außenbeleuchtung oder Heizstäbe.</div>`},
+  {ico:"SH", titel:"Schütz mit Selbsthaltung", kurz:"EIN- und AUS-Taster, Schütz hält sich selbst", fuss:"Einphasig mit Leuchte vereinfacht. Bei Motoren kommen drei Hauptkontakte und ein Motorschutz dazu.",
+   svg: SP.dot(100,30)+SP.w(100,30,100,50)+SP.oeffnerTaster(100,50,"S1")+SP.w(100,86,100,110)+SP.dot(100,110)+SP.w(66,110,134,110)
+     +SP.w(66,110,66,125)+SP.taster(66,125,"S2")+SP.w(134,110,134,125)+SP.schliesser(134,125,"K1")+SP.t(142,131,"13","klein")+SP.t(142,163,"14","klein")
+     +SP.w(66,161,66,180)+SP.w(134,161,134,180)+SP.w(66,180,134,180)+SP.dot(100,180)+SP.w(100,180,100,200)+SP.spule(100,200,"K1")+SP.w(100,218,100,280)+SP.dot(100,280)
+     +SP.dot(250,30)+SP.w(250,30,250,90)+SP.schliesser(250,90,"K1")+SP.klemmen(250,90,"1","2")+SP.w(250,126,250,190)+SP.lampe(250,190,"E1")+SP.w(250,216,250,280)+SP.dot(250,280)
+     +SP.t(40,298,"Steuerstromkreis","klein")+SP.t(210,298,"Hauptstromkreis","klein"),
+   text:`<p>EIN-Taster S2 kurz drücken: K1 zieht an. Sein Hilfsschließer 13-14 liegt parallel zu S2 und hält die Spule unter Spannung – das Schütz bleibt an, auch wenn S2 losgelassen wird. AUS-Taster S1 (Öffner) unterbricht den Steuerstromkreis, K1 fällt ab.</p>
+   <ul><li><b>AUS-Taster S1:</b> Öffner, in Reihe vor allem anderen</li><li><b>EIN-Taster S2:</b> Schließer</li><li><b>Hilfskontakt K1 13-14:</b> parallel zu S2 (Selbsthaltekontakt)</li></ul>
+   <div class="merke"><b>Merke:</b> Fällt der Strom aus, fällt das Schütz ab und läuft danach nicht von selbst wieder an (Wiederanlaufschutz). Deshalb wird Selbsthaltung bei Maschinen verwendet.</div>
+   <div class="bsp"><b>Fehlersuche:</b> Schütz geht nach dem Loslassen von S2 wieder aus? Selbsthaltekontakt 13-14 fehlt oder ist nicht parallel zu S2 angeschlossen.</div>`}
 ];
 document.getElementById("plaeneListe").innerHTML = PLAENE.map(p =>
   `<details class="tool acc"><summary><span class="ico">${p.ico}</span><span class="tt"><b>${p.titel}</b><span>${p.kurz}</span></span><span class="pm" aria-hidden="true">+</span></summary>
-   <div class="inner">${SP.svg(p.titel, p.svg)}${p.text}<p class="sub" style="margin:8px 0 0">Aderzahl ohne PE, bei Verlegung über Abzweigdose.</p></div></details>`).join("");
+   <div class="inner">${SP.svg(p.titel, p.svg)}${p.text}<p class="sub" style="margin:8px 0 0">${p.fuss || "Aderzahl ohne PE, bei Verlegung über Abzweigdose."}</p></div></details>`).join("");
 
 /* ---------- Dübel-Finder ---------- */
 const DF = {
